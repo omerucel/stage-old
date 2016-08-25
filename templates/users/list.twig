@@ -1,0 +1,66 @@
+{% extends "authenticated_base.twig" %}
+
+{% block title %}Kullanıcılar{% endblock %}
+
+{% block content %}
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Panel</a></li>
+        <li class="breadcrumb-item active">Kullanıcılar</li>
+    </ol>
+    <div class="card">
+        <div class="card-header">
+            Kullanıcılar
+        </div>
+        <div class="card-block">
+            <table class="table table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th style="width: 50px;">ID</th>
+                    <th>Adı Soyadı</th>
+                    <th style="width: 80px;">Rolü</th>
+                    <th style="width: 80px;">Durumu</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in pager.getItems() %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>
+                            <a href="/users/save?id={{ item.id }}"><i class="fa fa-edit"></i> {{ item.name }} {{ item.surname }}</a>
+                        </td>
+                        <td>
+                            <label class="label label-info">{{ item.role }}</label>
+                        </td>
+                        <td>
+                            <label class="tag {% if item.status == 1 %}tag-success{% else %}tag-warning{% endif %}">{% if item.status %}Aktif{% else %}Pasif{% endif %}</label>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4">
+                            <div class="alert alert-info">
+                                Herhangi bir kayıt bulunmamakta.
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                {% if pager.getLastPage() > 1 %}
+                    <tfoot>
+                        <tr>
+                            <td colspan="4">
+                                {% include 'pagination.twig' with {
+                                    currentFilters: {},
+                                    currentPage: pager.getCurrentPage(),
+                                    paginationPath: "/users",
+                                    lastPage: pager.getLastPage(),
+                                    showAlwaysFirstAndLast: true
+                                } only %}
+                            </td>
+                        </tr>
+                    </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+{% endblock %}

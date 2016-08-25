@@ -1,0 +1,180 @@
+{% extends "authenticated_base.twig" %}
+
+{% block title %}
+    Hosting: {{ project.name }}
+{% endblock %}
+
+{% block content %}
+    <div id="vhost-info" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" onclick="closeVhostModal();">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Sanal Sunucu Dosyası</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="loading">Yükleniyor...</div>
+                    <div id="vhost" style="height: 400px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="saveFile(this);">Kaydet</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeVhostModal();">İptal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="container-info" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" onclick="closeModal();">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Bilgiler</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="loading">Yükleniyor...</div>
+                    <div id="editor" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Panel</a></li>
+        <li class="breadcrumb-item"><a href="/projects">Projeler</a></li>
+        <li class="breadcrumb-item active">Hosting: {{ project.name }}</li>
+    </ol>
+    <div class="card">
+        <div class="card-header">Hosting: {{ project.name }}</div>
+        <div class="card-block">
+            {% if containers|length > 0 %}
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-success" onclick="start(this);"><span class="fa fa-play"></span> Başlat</button>
+                    <button class="btn btn-danger" onclick="stop(this);"><span class="fa fa-stop"></span> Durdur</button>
+                    <button class="btn btn-info" onclick="openVhostModal({{ project.id }});"><span class="fa fa-edit"></span> Sanal Sunucu Dosyası</button>
+                </div>
+                <table class="table table-bordered table-hover" style="margin-top: 20px;">
+                    <tbody>
+                        {% for container in containers %}
+                            <tr>
+                                <td>
+                                    <span class="fa fa-server"></span> {{ container.Name[1:] }}
+                                    <div class="pull-lg-right">
+                                        <span class="tag {% if container.State.Running %}tag-success{% else %}tag-danger{% endif %}">{{ container.State.Status }}</span>
+                                        <button type="button" class="btn btn-info btn-sm" onclick="inspect('{{ container.Id }}');"><span class="fa fa-info-circle"></span> Detay</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Proje kurulumu henüz yapılmamış. Lütfen butona tıklayarak işlemleri başlatınız. Bu işlem sırasında proje dosyaları kullanılarak docker konteynerları çalıştırılır.</p>
+                <a class="btn btn-primary btn-sm" href="/projects/setup_server?id={{ project.id }}"><span class="fa fa-gears"></span> Kurulumu Başlat</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript" src="/assets/ace/ace.js"></script>
+    <script type="text/javascript">
+        var fileEditor = ace.edit('editor');
+        fileEditor.setTheme('ace/theme/monokai');
+        fileEditor.setReadOnly(true);
+        fileEditor.getSession().setMode("ace/mode/yaml");
+
+        var vhostEditor = ace.edit('vhost');
+        vhostEditor.setTheme('ace/theme/monokai');
+        vhostEditor.getSession().setMode("ace/mode/lua");
+
+        function start(object) {
+            var oldHtml = $(object).html();
+            $(object).attr('disabled', 'disabled');
+            $(object).html('Starting...');
+            $.post('/projects/start_server?id=' + {{ project.id }})
+                    .done(function () {
+                    })
+                    .fail(function () {
+                    })
+                    .always(function () {
+                        $(object).removeAttr('disabled');
+                        $(object).html(oldHtml);
+                    });
+        }
+
+        function stop(object) {
+            var oldHtml = $(object).html();
+            $(object).attr('disabled', 'disabled');
+            $(object).html('Stopping...');
+            $.post('/projects/stop_server?id=' + {{ project.id }})
+                    .always(function () {
+                        $(object).removeAttr('disabled');
+                        $(object).html(oldHtml);
+                    });
+        }
+
+        function inspect(containerId) {
+            $('#container-info').modal('show');
+            $('#container-info .loading').show();
+            $('#editor').hide();
+            $.get('/projects/inspect_server?container_id=' + containerId)
+                    .done(function (data) {
+                        $('#container-info .loading').hide();
+                        $('#editor').show();
+                        setTimeout(function () {
+                            fileEditor.getSession().setValue(JSON.stringify(data, null, 2));
+                        }, 300);
+                    })
+                    .fail(function () {
+                        alert('An error occurred!');
+                    });
+        }
+
+        function openVhostModal(project_id) {
+            $('#vhost-info').modal('show');
+            $('#vhost-info .loading').show();
+            $('#vhost').hide();
+            $.get('/projects/get_vhost', {id: project_id})
+                    .always(function (data) {
+                        $('#vhost-info .loading').hide();
+                        $('#vhost').show();
+                        if (data.status == 200) {
+                            setTimeout(function () {
+                                vhostEditor.getSession().setValue(data.responseText);
+                            }, 300);
+                        } else if (data.status == 404) {
+                            setTimeout(function () {
+                                vhostEditor.getSession().setValue('');
+                            }, 300);
+                        }
+                    });
+        }
+
+        function saveFile(object) {
+            var oldHtml = $(object).html();
+            $(object).attr('disabled', 'disabled');
+            $(object).html('Saving...');
+            $.post('/projects/save_vhost?id=' + {{ project.id }}, {content: vhostEditor.getSession().getValue()})
+                    .always(function (data) {
+                        if (data.status == 200) {
+                            alert('Kaydedildi.');
+                        } else {
+                            alert('Kaydedilemedi.');
+                        }
+                        $(object).removeAttr('disabled');
+                        $(object).html(oldHtml);
+                    });
+        }
+
+        function closeModal() {
+            $('#container-info').modal('hide');
+        }
+
+        function closeVhostModal() {
+            $('#vhost-info').modal('hide');
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,12 @@
+<?php
+
+$configs = include(__DIR__ . '/../global.php');
+
+$configs['nginx_bin'] = '/Applications/MAMP/Library/bin/nginxctl';
+
+/**
+ * Logger
+ */
+$configs['logger']['default_level'] = \Monolog\Logger::DEBUG;
+
+return $configs;

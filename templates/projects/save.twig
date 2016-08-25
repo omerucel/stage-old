@@ -1,0 +1,173 @@
+{% extends "authenticated_base.twig" %}
+
+{% block title %}
+    Proje {% if id > 0 %}Güncelle{% else %}Ekle{% endif %}
+{% endblock %}
+
+{% block content %}
+    <div id="file-save" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" onclick="closeModal();">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Dosya</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="old_name" value="" />
+                    <div class="form-group">
+                        <label>Dosya Adı</label>
+                        <input type="text" class="form-control" name="name" />
+                    </div>
+                    <div class="form-group">
+                        <label>Dosya İçeriği</label>
+                        <div id="editor" style="height: 200px;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="setFile();">Kaydet</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal();">İptal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Panel</a></li>
+        <li class="breadcrumb-item"><a href="/projects">Projeler</a></li>
+        <li class="breadcrumb-item active">Proje {% if id > 0 %}Güncelle{% else %}Ekle{% endif %}</li>
+    </ol>
+    <div class="card">
+        <div class="card-header">
+            Proje {% if id > 0 %}Güncelle{% else %}Ekle{% endif %}
+        </div>
+        <div class="card-block">
+            {% include "messages.twig" %}
+            <form method="post">
+                <div class="form-group {% if has_name_error %}has-danger{% endif %}">
+                    <label>Proje Adı</label>
+                    <input type="text" class="form-control" name="name" value="{{ form_data.name }}" />
+                </div>
+                <table class="table table-bordered table-hover" id="file-container">
+                    <thead>
+                    <tr>
+                        <th>Dosya Adı {{ test }}</th>
+                        <th style="width: 120px;">İşlemler</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success"><span class="fa fa-save"></span> Kaydet</button>
+                    <button type="button" class="btn btn-warning" onclick="showNewWindow();"><span class="fa fa-plus-square"></span> Yeni Dosya Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% verbatim %}
+        <script id="file-list-template" type="text/x-handlebars-template">
+            {{#if files}}
+                {{#each files}}
+                    <tr>
+                        <td>
+                            <span {{#if notSaved}}style="color: indianred;"{{/if}}>{{ name }}</span>
+                            <input type="hidden" name="file_name[]" value="{{ name }}" />
+                            <input type="hidden" name="file_content[]" value="{{ content }}" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm" onclick="showEditWindow('{{ name }}');"><span class="fa fa-edit"></span></button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeFile('{{ name }}');"><span class="fa fa-remove"></span></button>
+                        </td>
+                    </tr>
+                {{/each}}
+            {{else}}
+                <tr>
+                    <td colspan="2"><div class="alert alert-info">Herhangi bir dosya eklenmemiş.</div></td>
+                </tr>
+            {{/if}}
+        </script>
+    {% endverbatim %}
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript" src="/assets/underscore.js"></script>
+    <script type="text/javascript" src="/assets/ace/ace.js"></script>
+    <script type="text/javascript" src="/assets/handlebars.js"></script>
+    <script type="text/javascript">
+        var files = {{  form_data.files|raw }};
+        var fileEditor = ace.edit('editor');
+        var fileListTemplate = Handlebars.compile($('#file-list-template').html());
+
+        function render() {
+            files = _.sortBy(files, 'name');
+            $('#file-container tbody').html(fileListTemplate({
+                files: files
+            }));
+        }
+
+        function removeFile(name) {
+            files = _.reject(files, function (item) {
+                return item.name == name;
+            });
+            render();
+        }
+
+        function showNewWindow() {
+            $('#file-save input[name=old_name]').val('');
+            $('#file-save input[name=name]').val('');
+            $('#file-save').modal('show');
+            setTimeout(function () {
+                fileEditor.getSession().setValue('');
+            }, 300);
+        }
+
+        function showEditWindow(name) {
+            $('#file-save input[name=old_name]').val(name);
+            var file = _.findWhere(files, {name: name});
+            $('#file-save input[name=name]').val(file.name);
+            $('#file-save').modal('show');
+            setTimeout(function () {
+                fileEditor.getSession().setValue(file.content);
+            }, 300);
+        }
+
+        function setFile() {
+            var oldName = $('#file-save input[name=old_name]').val();
+            var name = $('#file-save input[name=name]').val();
+            var content = fileEditor.getSession().getValue();
+            if (oldName.length == 0 || (oldName != name)) {
+                oldFile = _.findWhere(files, {name: name});
+                if (oldFile != undefined) {
+                    if (confirm('Aynı isimli başka bir dosya var. Üzerine yazılsın mı?')) {
+                        saveFile(name, content, oldName);
+                    }
+                } else {
+                    saveFile(name, content, oldName);
+                }
+            } else {
+                saveFile(name, content, oldName);
+            }
+        }
+
+        function saveFile(name, content, oldName) {
+            files = _.reject(files, function (file) {
+                return file.name == name || file.name == oldName;
+            });
+            files.push({
+                name: name,
+                content: content,
+                notSaved: true
+            });
+            $('#file-save input[name=name]').val('');
+            fileEditor.getSession().setValue('');
+            $('#file-save').modal('hide');
+            render();
+        }
+
+        function closeModal() {
+            $('#file-save').modal('hide');
+        }
+
+        render();
+    </script>
+{% endblock %}

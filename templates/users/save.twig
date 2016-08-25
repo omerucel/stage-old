@@ -1,0 +1,96 @@
+{% extends "authenticated_base.twig" %}
+
+{% block title %}
+    {% if user.id == id %}
+        Bilgilerim
+    {% else %}
+        Kullanıcı {% if id > 0 %}Güncelle{% else %}Ekle{% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Panel</a></li>
+        {% if user.id == id %}
+            <li class="breadcrumb-item active">Bilgilerim</li>
+        {% else %}
+            <li class="breadcrumb-item"><a href="/users">Kullanıcılar</a></li>
+            <li class="breadcrumb-item active">Kullanıcı {% if id > 0 %}Güncelle{% else %}Ekle{% endif %}</li>
+        {% endif %}
+    </ol>
+    <div class="card">
+        <div class="card-header">
+            {% if user.id == id %}
+                Bilgilerim
+            {% else %}
+                Kullanıcı {% if id > 0 %}Güncelle{% else %}Ekle{% endif %}
+            {% endif %}
+        </div>
+        <div class="card-block">
+            {% include "messages.twig" %}
+            <form method="post">
+                <div class="form-group {% if has_email_error %}has-danger{% endif %}">
+                    <label>E-Posta Adresi</label>
+                    <input type="text" class="form-control" name="email" value="{{ form_data.email }}" />
+                </div>
+                <div class="form-group {% if has_name_error %}has-danger{% endif %}">
+                    <label>Ad</label>
+                    <input type="text" class="form-control" name="name" value="{{ form_data.name }}" />
+                </div>
+                <div class="form-group {% if has_surname_error %}has-danger{% endif %}">
+                    <label>Soyad</label>
+                    <input type="text" class="form-control" name="surname" value="{{ form_data.surname }}" />
+                </div>
+                {% if user.isAdmin() %}
+                    <div class="form-group {% if has_role_error %}has-danger{% endif %}">
+                        <label>Rolü</label>
+                        <select name="role" class="form-control">
+                            <option value="admin" {% if form_data.role == 'admin' %}selected="selected"{% endif %}>admin</option>
+                            <option value="user" {% if form_data.role == 'user' %}selected="selected"{% endif %}>user</option>
+                        </select>
+                    </div>
+                {% endif %}
+                {% if user.isAdmin() %}
+                    <div class="form-group {% if has_permission_error %}has-danger{% endif %}">
+                        <label>İzinler</label>
+                        <select class="form-control" id="permissions" name="permissions[]" multiple="multiple">
+                            {% for permission in permissions %}
+                                <option value="{{ permission.id }}" {% if permission.id in form_data.selected_permission_ids %}selected="selected"{% endif %}>{{ permission.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
+                <div class="form-group {% if has_password_error %}has-danger{% endif %}">
+                    <label>Şifre</label>
+                    <input type="password" class="form-control" name="password" />
+                </div>
+                <div class="form-group {% if has_password_error %}has-danger{% endif %}">
+                    <label>Şifre Tekrarı</label>
+                    <input type="password" class="form-control" name="password_repeat" />
+                </div>
+                <div class="form-group {% if has_status_error %}has-danger{% endif %}">
+                    <label>Durumu</label>
+                    <div class="checkbox">
+                        <input type="checkbox" name="status" {% if form_data.status %}checked="checked"{% endif %} /> Aktif
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="/assets/select2/css/select2.min.css" />
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript" src="/assets/select2/js/select2.full.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#permissions').select2();
+        });
+    </script>
+{% endblock %}

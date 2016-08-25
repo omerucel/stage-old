@@ -1,0 +1,111 @@
+<?php
+
+namespace Application\Database\MySQL;
+
+use Application\Model\Project;
+use Application\Pdo\Exception\RecordNotFoundException;
+use Application\Pdo\Pager;
+
+class ProjectMapper extends BaseMapper
+{
+    /**
+     * @param Project $project
+     */
+    public function save(Project $project)
+    {
+        $params = [
+            ':name' => $project->name
+        ];
+        if ($project->id == 0) {
+            $sql = 'INSERT INTO project (name) VALUES (:name)';
+            $project->id = $this->getWrapper()->insert($sql, $params);
+        } else {
+            $sql = 'UPDATE project SET name =:name WHERE id =:id';
+            $params[':id'] = $project->id;
+            $this->getWrapper()->query($sql, $params);
+        }
+    }
+
+    /**
+     * @param $projectId
+     * @param array $files
+     */
+    public function updateProjectFiles($projectId, array $files = array())
+    {
+        $sql = 'DELETE FROM project_file WHERE project_id =:project_id';
+        $this->getWrapper()->query($sql, [':project_id' => $projectId]);
+        if (empty($files) == false) {
+            $sql = 'INSERT INTO project_file (project_id, name, content) VALUES '
+                . substr(str_repeat('(?, ?, ?),', count($files)), 0, -1);
+            $params = array();
+            foreach ($files as $file) {
+                $params[] = $projectId;
+                $params[] = $file['name'];
+                $params[] = $file['content'];
+            }
+            $this->getWrapper()->query($sql, $params);
+        }
+    }
+
+    /**
+     * @param $id
+     * @return Project
+     * @throws RecordNotFoundException
+     */
+    public function findOneObjectById($id)
+    {
+        $sql = 'SELECT * FROM project WHERE id =:id';
+        $params = [':id' => $id];
+        return $this->getWrapper()
+            ->fetchOneObject($sql, $params, 'Application\Model\Project', [$this->getDi()]);
+    }
+
+    /**
+     * @param $name
+     * @param null $excludedId
+     * @return bool
+     */
+    public function isProjectNameUsing($name, $excludedId = null)
+    {
+        $sql = 'SELECT COUNT(id) FROM project WHERE name =:name';
+        $params = [':name' => $name];
+        if ($excludedId > 0) {
+            $sql.= ' AND id !=:id';
+            $params[':id'] = $excludedId;
+        }
+        return $this->getWrapper()->fetchColumn($sql, $params) > 0;
+    }
+
+    /**
+     * @param $projectId
+     * @return array
+     */
+    public function getProjectFiles($projectId)
+    {
+        $sql = 'SELECT name, content FROM project_file WHERE project_id =:project_id ORDER BY name ASC';
+        $params = [':project_id' => $projectId];
+        return $this->getWrapper()->fetchAllKeyPair($sql, $params);
+    }
+
+    /**
+     * @param array $orderItems
+     * @param int $currentPage
+     * @param int $perPageItem
+     * @return Pager
+     */
+    public function paginate(array $orderItems = array(), $currentPage = 1, $perPageItem = 30)
+    {
+        $itemSql = 'SELECT * FROM project';
+        $totalCountSql = 'SELECT COUNT(*) AS count FROM project';
+        $pager = new Pager($this->getDi());
+        $pager->setObjectClass('Application\Model\Project');
+        $pager->setObjectContructParams(array($this->getDi()));
+        $pager->setAcceptedOrderFields(array('name'));
+        $pager->setOrderItems($orderItems);
+        $pager->setItemSql($itemSql);
+        $pager->setTotalItemCountSql($totalCountSql);
+        $pager->setCurrentPage($currentPage);
+        $pager->setPerPageItem($perPageItem);
+        return $pager;
+    }
+}
