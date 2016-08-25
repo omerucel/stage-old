@@ -1,4 +1,5 @@
-Docker konteynerlerinin nginx üzerinden sunulmasını sağlar.
+Docker konteynerlerinin nginx üzerinden sunulmasını sağlar. Kişisel sunucularda ya da şirket içi
+projeleri test etmek için kullanılabilir.
 
 # Gereksinimler
 
@@ -24,6 +25,21 @@ anahtarları üzerinden belirtilmelidir.
 # Demo
 
 [![Demo](http://img.youtube.com/vi/pX1DBrwaHJU/0.jpg)](http://www.youtube.com/watch?v=pX1DBrwaHJU)
+
+# Kullanım
+
+Bu uygulama içinde bir projeyi docker projesi olarak isimlendirebiliriz. Bu projeye ait **Dockerfile** ve **docker-compose.yml** isimli
+dosyalar özel dosyalardır. Bu isimleri kullanarak, ilgili özel dosyalar (ve diğer harici dosyalar) proje ekleme/güncelleme ekranından tanımlanabilir.
+
+Projeye eklenen dosyalar aynı dizinde bulunmaktadır. **Dockerfile** için **ADD**, **COPY** gibi komutlarda ve
+**docker-compose.yml** için **build:** gibi ayarlarda bu göz önünde bulundurulmalıdır.
+
+Her bir projenin sunucu ekranında **Başlat**, **Durdur** işlemleri arkaplanda docker-compose komutunu
+projeye bağlı docker-compose.yml dosyası için çalıştırmaktadır.
+
+Sunucu ekranındaki **Sanal Sunucu Dosyası** özelliği ise projenin nginx üzerinden sunulması için gerekli sanal sunucu dosyasını
+güncellemeye yardımcı olur. Bu bilgi güncellendiğinde nginx ayarları yeniden yüklenmektedir.
+Bu dosya üzerinden hangi port numarasının, hangi sunucu adı ile yayınlanacağı nginx'e bildirilir.
 
 # Yapılacak İşler
 
