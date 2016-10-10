@@ -40,6 +40,20 @@ class Docker
     }
 
     /**
+     * @param $directory
+     * @param null $serviceName
+     * @return array
+     */
+    public function logs($directory, $serviceName = null)
+    {
+        $args = ['-f', $directory . '/docker-compose.yml', 'logs'];
+        if ($serviceName !== null) {
+            $args[] = $serviceName;
+        }
+        return $this->composeExec($args);
+    }
+
+    /**
      * @param $containerId
      * @return array
      */
@@ -86,7 +100,7 @@ class Docker
     protected function composeExec(array $args = array())
     {
         array_unshift($args, $this->getConfig()->docker_compose_bin);
-        $cmd = implode(' ', $args);
+        $cmd = implode(' ', $args) . ' 2>&1';
         exec($cmd, $output, $exitCode);
         $this->getLogger()->debug('Cmd:' . $cmd);
         $this->getLogger()->debug('Output:' . json_encode($output));

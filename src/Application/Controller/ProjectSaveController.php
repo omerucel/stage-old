@@ -119,14 +119,36 @@ class ProjectSaveController extends BaseController
                 );
                 $projectDir = $project->getDirectory();
                 $docker = new Docker($this->getDi());
-                $docker->stop($project->getDirectory());
+                $response = $docker->stop($project->getDirectory());
+                if ($response['exitCode'] !== 0) {
+                    $templateParams['form_messages'][] = [
+                        'message' => 'Sunucular durdurulamadı. ' . implode(' ', $response['output']),
+                        'type' => 'warning'
+                    ];
+                } else {
+                    $templateParams['form_messages'][] = [
+                        'message' => 'Sunucular başarıyla durduruldu.',
+                        'type' => 'success'
+                    ];
+                }
                 if (is_dir($projectDir) == false) {
                     mkdir($projectDir, 0777);
                 }
                 foreach ($files as $file) {
                     file_put_contents($projectDir . '/' . $file['name'], $file['content']);
                 }
-                $docker->start($projectDir);
+                $response = $docker->start($projectDir);
+                if ($response['exitCode'] !== 0) {
+                    $templateParams['form_messages'][] = [
+                        'message' => 'Sunucular başlatılamadı. ' . implode(' ', $response['output']),
+                        'type' => 'warning'
+                    ];
+                } else {
+                    $templateParams['form_messages'][] = [
+                        'message' => 'Sunucular başarıyla başlatıldı',
+                        'type' => 'success'
+                    ];
+                }
 
                 $message = 'Proje kaydedildi.';
                 if ($id == 0) {

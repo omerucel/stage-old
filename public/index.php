@@ -57,10 +57,11 @@ namespace {
             $collector->addRoute(['GET', 'POST'], '/projects/save', 'Application\Controller\ProjectSaveController');
             // Server
             $collector->addRoute(['GET', 'POST'], '/projects/server', 'Application\Controller\ServerController');
-            $collector->addRoute(['GET', 'POST'], '/projects/server/start', 'Application\Controller\ServerStartController');
-            $collector->addRoute(['GET', 'POST'], '/projects/server/stop', 'Application\Controller\ServerStopController');
-            $collector->addRoute(['GET', 'POST'], '/projects/server/inspect', 'Application\Controller\ServerInspectController');
-            $collector->addRoute(['GET', 'POST'], '/projects/containers', 'Application\Controller\ContainersController');
+            $collector->addRoute('POST', '/projects/server/start', 'Application\Controller\ServerStartController');
+            $collector->addRoute('POST', '/projects/server/stop', 'Application\Controller\ServerStopController');
+            $collector->addRoute('GET', '/projects/server/inspect', 'Application\Controller\ServerInspectController');
+            $collector->addRoute('GET', '/projects/server/logs', 'Application\Controller\ServerLogsController');
+            $collector->addRoute('GET', '/projects/containers', 'Application\Controller\ContainersController');
             // Vhost
             $collector->addRoute(['GET', 'POST'], '/projects/vhost', 'Application\Controller\VhostController');
             // Users

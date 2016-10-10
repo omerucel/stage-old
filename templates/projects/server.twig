@@ -9,7 +9,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" onclick="closeVhostModal();">
+                    <button type="button" class="close" onclick="closeModal(this);">
                         <span aria-hidden="true">&times;</span>
                     </button>
                     <h4 class="modal-title">Sanal Sunucu Dosyası</h4>
@@ -20,7 +20,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" onclick="saveFile(this);">Kaydet</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeVhostModal();">İptal</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal(this);">İptal</button>
                 </div>
             </div>
         </div>
@@ -29,10 +29,28 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" onclick="closeModal();">
+                    <button type="button" class="close" onclick="closeModal(this);">
                         <span aria-hidden="true">&times;</span>
                     </button>
                     <h4 class="modal-title">Bilgiler</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="loading">Yükleniyor...</div>
+                    <div class="scroll">
+                        <div class="detail"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="log-info" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" onclick="closeModal(this);">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Loglar</h4>
                 </div>
                 <div class="modal-body">
                     <div class="loading">Yükleniyor...</div>
@@ -55,7 +73,8 @@
                 <div class="btn-group btn-group-sm">
                     <button class="btn btn-success" onclick="start(this);"><span class="fa fa-play"></span> Başlat</button>
                     <button class="btn btn-danger" onclick="stop(this);"><span class="fa fa-stop"></span> Durdur</button>
-                    <button class="btn btn-info" onclick="openVhostModal({{ project.id }});"><span class="fa fa-edit"></span> Sanal Sunucu Dosyası</button>
+                    <button class="btn btn-info" onclick="openVhostModal();"><span class="fa fa-edit"></span> Sanal Sunucu Dosyası</button>
+                    <button class="btn" onclick="logs();"><span class="fa fa-history"></span> Loglar</button>
                 </div>
             </div>
         </div>
@@ -77,6 +96,7 @@
                                     <div class="pull-md-right">
                                         <span class="tag {{#if is_running }}tag-success{{else}}tag-danger{{/if}}">{{status}}</span>
                                         <button type="button" class="btn btn-sm" onclick="inspect('{{id}}');"><span class="fa fa-info-circle"></span> Detay</button>
+                                        <button type="button" class="btn btn-sm" onclick="logs('{{name}}');"><span class="fa fa-history"></span> Loglar</button>
                                     </div>
                                 </div>
                             </div>
@@ -114,6 +134,7 @@
     <script type="text/javascript" src="/assets/ace/ace.js"></script>
     <script type="text/javascript" src="/assets/handlebars.js"></script>
     <script type="text/javascript">
+        var projectId = {{ project.id }};
         var vhostEditor = ace.edit('vhost');
         vhostEditor.setTheme('ace/theme/monokai');
         vhostEditor.getSession().setMode("ace/mode/lua");
@@ -121,7 +142,7 @@
 
         function render() {
             $('#containers tbody').html('<tr><td>Yükleniyor...</td></tr>');
-            $.get('/projects/containers?id=' + {{ project.id }})
+            $.get('/projects/containers?id=' + projectId)
                     .done(function (containers) {
                         containers = _.map(containers, function (item) {
                             var ports = [];
@@ -136,7 +157,7 @@
                             });
                             return {
                                 id: item.Id,
-                                name: item.Name.substr(1),
+                                name: item.Config.Labels['com.docker.compose.service'],
                                 is_running: item.State.Running,
                                 status: item.State.Status,
                                 ports: ports
@@ -156,7 +177,7 @@
             var oldHtml = $(object).html();
             $(object).attr('disabled', 'disabled');
             $(object).html('Starting...');
-            $.post('/projects/server/start?id=' + {{ project.id }})
+            $.post('/projects/server/start?id=' + projectId)
                     .done(function () {
                     })
                     .fail(function () {
@@ -172,7 +193,7 @@
             var oldHtml = $(object).html();
             $(object).attr('disabled', 'disabled');
             $(object).html('Stopping...');
-            $.post('/projects/server/stop?id=' + {{ project.id }})
+            $.post('/projects/server/stop?id=' + projectId)
                     .always(function () {
                         $(object).removeAttr('disabled');
                         $(object).html(oldHtml);
@@ -194,11 +215,28 @@
                     });
         }
 
-        function openVhostModal(project_id) {
+        function logs(serviceName) {
+            if (serviceName == undefined) {
+                serviceName = '';
+            }
+            $('#log-info').modal('show');
+            $('#log-info .detail').hide();
+            $('#log-info .loading').show();
+            $.get('/projects/server/logs?id=' + projectId + '&service_name=' + serviceName)
+                    .done(function (data) {
+                        $('#log-info .loading').hide();
+                        $('#log-info .detail').show().html(data.replace(/\n/g, "<br />"));
+                    })
+                    .fail(function (e) {
+                        alert('An error occurred!');
+                    });
+        }
+
+        function openVhostModal() {
             $('#vhost-info').modal('show');
             $('#vhost-info .loading').show();
             $('#vhost').hide();
-            $.get('/projects/vhost', {id: project_id})
+            $.get('/projects/vhost', {id: projectId})
                     .always(function (data) {
                         $('#vhost-info .loading').hide();
                         $('#vhost').show();
@@ -218,7 +256,7 @@
             var oldHtml = $(object).html();
             $(object).attr('disabled', 'disabled');
             $(object).html('Saving...');
-            $.post('/projects/vhost?id=' + {{ project.id }}, {content: vhostEditor.getSession().getValue()})
+            $.post('/projects/vhost?id=' + projectId, {content: vhostEditor.getSession().getValue()})
                     .always(function (data) {
                         if (data.status == 200) {
                             alert('Kaydedildi.');
@@ -230,14 +268,9 @@
                     });
         }
 
-        function closeModal() {
-            $('#container-info').modal('hide');
+        function closeModal(e) {
+            $(e).parents('.modal').modal('hide');
         }
-
-        function closeVhostModal() {
-            $('#vhost-info').modal('hide');
-        }
-
         render();
     </script>
 {% endblock %}
