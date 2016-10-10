@@ -4,11 +4,9 @@ namespace Application\Controller;
 
 class IndexController extends BaseController
 {
-    public function indexAction()
+    public function handle(array $params = [])
     {
-        if ($this->getUser() == null) {
-            return $this->response->redirect('/login/');
-        }
+        $this->checkPermission();
         return $this->render('index.twig');
     }
 }

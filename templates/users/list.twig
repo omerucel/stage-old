@@ -17,7 +17,6 @@
                 <tr>
                     <th style="width: 50px;">ID</th>
                     <th>Adı Soyadı</th>
-                    <th style="width: 80px;">Rolü</th>
                     <th style="width: 80px;">Durumu</th>
                 </tr>
                 </thead>
@@ -27,9 +26,6 @@
                         <td>{{ item.id }}</td>
                         <td>
                             <a href="/users/save?id={{ item.id }}"><i class="fa fa-edit"></i> {{ item.name }} {{ item.surname }}</a>
-                        </td>
-                        <td>
-                            <label class="label label-info">{{ item.role }}</label>
                         </td>
                         <td>
                             <label class="tag {% if item.status == 1 %}tag-success{% else %}tag-warning{% endif %}">{% if item.status %}Aktif{% else %}Pasif{% endif %}</label>

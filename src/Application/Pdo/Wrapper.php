@@ -2,15 +2,15 @@
 
 namespace Application\Pdo;
 
+use League\Container\Container;
 use Monolog\Logger;
-use Phalcon\Di;
 use Psr\Log\LoggerInterface;
 use Application\Pdo\Exception\RecordNotFoundException;
 
 class Wrapper
 {
     /**
-     * @var Di
+     * @var Container
      */
     protected $di;
 
@@ -20,9 +20,9 @@ class Wrapper
     protected $transactionLevel = 0;
 
     /**
-     * @param Di $di
+     * @param Container $di
      */
-    public function __construct(Di $di)
+    public function __construct(Container $di)
     {
         $this->di = $di;
     }
@@ -286,7 +286,7 @@ class Wrapper
     }
 
     /**
-     * @return Di
+     * @return Container
      */
     public function getDi()
     {

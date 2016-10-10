@@ -41,16 +41,7 @@
                     <label>Soyad</label>
                     <input type="text" class="form-control" name="surname" value="{{ form_data.surname }}" />
                 </div>
-                {% if user.isAdmin() %}
-                    <div class="form-group {% if has_role_error %}has-danger{% endif %}">
-                        <label>Rolü</label>
-                        <select name="role" class="form-control">
-                            <option value="admin" {% if form_data.role == 'admin' %}selected="selected"{% endif %}>admin</option>
-                            <option value="user" {% if form_data.role == 'user' %}selected="selected"{% endif %}>user</option>
-                        </select>
-                    </div>
-                {% endif %}
-                {% if user.isAdmin() %}
+                {% if user.isAllowed('users.save') %}
                     <div class="form-group {% if has_permission_error %}has-danger{% endif %}">
                         <label>İzinler</label>
                         <select class="form-control" id="permissions" name="permissions[]" multiple="multiple">
@@ -68,12 +59,14 @@
                     <label>Şifre Tekrarı</label>
                     <input type="password" class="form-control" name="password_repeat" />
                 </div>
-                <div class="form-group {% if has_status_error %}has-danger{% endif %}">
-                    <label>Durumu</label>
-                    <div class="checkbox">
-                        <input type="checkbox" name="status" {% if form_data.status %}checked="checked"{% endif %} /> Aktif
+                {% if user.isAllowed('users.save') %}
+                    <div class="form-group {% if has_status_error %}has-danger{% endif %}">
+                        <label>Durumu</label>
+                        <div class="checkbox">
+                            <input type="checkbox" name="status" {% if form_data.status %}checked="checked"{% endif %} /> Aktif
+                        </div>
                     </div>
-                </div>
+                {% endif %}
                 <div class="form-actions">
                     <button type="submit" class="btn btn-success">Kaydet</button>
                 </div>

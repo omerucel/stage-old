@@ -7,29 +7,17 @@ class User extends BaseModel
     const STATUS_ACTIVE = 1;
     const STATUS_PASSIVE = 0;
 
-    const ROLE_ADMIN = 'admin';
-    const ROLE_USER = 'user';
-
     public $id;
     public $email;
     public $password;
     public $name;
     public $surname;
     public $status;
-    public $role;
 
     /**
      * @var array
      */
     protected $permissions = array();
-
-    /**
-     * @return bool
-     */
-    public function isAdmin()
-    {
-        return $this->role == User::ROLE_ADMIN;
-    }
 
     /**
      * @param $permission
@@ -70,8 +58,7 @@ class User extends BaseModel
             'password' => $this->password,
             'name' => $this->name,
             'surname' => $this->surname,
-            'status' => $this->status,
-            'role' => $this->role
+            'status' => $this->status
         );
     }
 }

@@ -2,19 +2,19 @@
 
 namespace Application\Database\MySQL;
 
-use Phalcon\Di;
+use League\Container\Container;
 
 class MapperContainer
 {
     /**
-     * @var Di
+     * @var Container
      */
     protected $di;
 
     /**
-     * @param Di $di
+     * @param Container $di
      */
-    public function __construct(Di $di)
+    public function __construct(Container $di)
     {
         $this->di = $di;
     }
@@ -60,13 +60,13 @@ class MapperContainer
         $key = 'mapper_' . $name;
         if ($this->getDi()->has($key) == false) {
             $className = 'Application\Database\MySQL\\' . $name;
-            $this->getDi()->setShared($key, new $className($this->getDi()));
+            $this->getDi()->share($key, new $className($this->getDi()));
         }
         return $this->getDi()->get($key);
     }
 
     /**
-     * @return Di
+     * @return Container
      */
     public function getDi()
     {

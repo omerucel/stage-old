@@ -2,21 +2,20 @@
 
 namespace Application;
 
-use Phalcon\Config;
-use Phalcon\Di;
+use League\Container\Container;
 use Psr\Log\LoggerInterface;
 
 class Docker
 {
     /**
-     * @var Di
+     * @var Container
      */
     protected $di;
 
     /**
-     * @param Di $di
+     * @param Container $di
      */
-    public function __construct(Di $di)
+    public function __construct(Container $di)
     {
         $this->di = $di;
     }
@@ -117,7 +116,7 @@ class Docker
     }
 
     /**
-     * @return Config
+     * @return \stdClass
      */
     protected function getConfig()
     {

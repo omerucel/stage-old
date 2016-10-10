@@ -72,7 +72,7 @@
                 </table>
             {% else %}
                 <p>Proje kurulumu henüz yapılmamış. Lütfen butona tıklayarak işlemleri başlatınız. Bu işlem sırasında proje dosyaları kullanılarak docker konteynerları çalıştırılır.</p>
-                <a class="btn btn-primary btn-sm" href="/projects/setup_server?id={{ project.id }}"><span class="fa fa-gears"></span> Kurulumu Başlat</a>
+                <a class="btn btn-primary btn-sm" href="/projects/server/setup?id={{ project.id }}"><span class="fa fa-gears"></span> Kurulumu Başlat</a>
             {% endif %}
         </div>
     </div>
@@ -94,7 +94,7 @@
             var oldHtml = $(object).html();
             $(object).attr('disabled', 'disabled');
             $(object).html('Starting...');
-            $.post('/projects/start_server?id=' + {{ project.id }})
+            $.post('/projects/server/start?id=' + {{ project.id }})
                     .done(function () {
                     })
                     .fail(function () {
@@ -109,7 +109,7 @@
             var oldHtml = $(object).html();
             $(object).attr('disabled', 'disabled');
             $(object).html('Stopping...');
-            $.post('/projects/stop_server?id=' + {{ project.id }})
+            $.post('/projects/server/stop?id=' + {{ project.id }})
                     .always(function () {
                         $(object).removeAttr('disabled');
                         $(object).html(oldHtml);
@@ -120,7 +120,7 @@
             $('#container-info').modal('show');
             $('#container-info .loading').show();
             $('#editor').hide();
-            $.get('/projects/inspect_server?container_id=' + containerId)
+            $.get('/projects/server/inspect?container_id=' + containerId)
                     .done(function (data) {
                         $('#container-info .loading').hide();
                         $('#editor').show();
@@ -137,7 +137,7 @@
             $('#vhost-info').modal('show');
             $('#vhost-info .loading').show();
             $('#vhost').hide();
-            $.get('/projects/get_vhost', {id: project_id})
+            $.get('/projects/vhost', {id: project_id})
                     .always(function (data) {
                         $('#vhost-info .loading').hide();
                         $('#vhost').show();
@@ -157,7 +157,7 @@
             var oldHtml = $(object).html();
             $(object).attr('disabled', 'disabled');
             $(object).html('Saving...');
-            $.post('/projects/save_vhost?id=' + {{ project.id }}, {content: vhostEditor.getSession().getValue()})
+            $.post('/projects/vhost?id=' + {{ project.id }}, {content: vhostEditor.getSession().getValue()})
                     .always(function (data) {
                         if (data.status == 200) {
                             alert('Kaydedildi.');

@@ -18,16 +18,15 @@ class UserMapper extends BaseMapper
             ':password' => $user->password,
             ':name' => $user->name,
             ':surname' => $user->surname,
-            ':status' => intval($user->status),
-            ':role' => $user->role
+            ':status' => intval($user->status)
         ];
         if ($user->id == 0) {
-            $sql = 'INSERT INTO users (email, password, name, surname, status, role) VALUES ('
-                . ':email, :password, :name, :surname, :status, :role)';
+            $sql = 'INSERT INTO users (email, password, name, surname, status) VALUES ('
+                . ':email, :password, :name, :surname, :status)';
             $user->id = $this->getWrapper()->insert($sql, $params);
         } else {
             $sql = 'UPDATE users SET email =:email, password =:password, name =:name, surname =:surname,'
-                . ' status =:status, role =:role WHERE id =:id';
+                . ' status =:status WHERE id =:id';
             $params[':id'] = $user->id;
             $this->getWrapper()->query($sql, $params);
         }

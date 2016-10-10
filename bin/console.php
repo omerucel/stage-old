@@ -11,11 +11,11 @@ namespace {
     use Doctrine\DBAL\Migrations\Tools\Console\Command\StatusCommand;
     use Doctrine\DBAL\Migrations\Tools\Console\Command\VersionCommand;
     use Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper;
-    use Phalcon\Di;
+    use League\Container\Container;
     use Symfony\Component\Console\Application;
 
     /**
-     * @var $di Di
+     * @var $di Container
      */
     $di = include(realpath(__DIR__ . '/../') . '/configs/bootstrap.php');
     $di->get('config')->logger->default_name = 'console';

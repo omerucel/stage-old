@@ -2,20 +2,20 @@
 
 namespace Application\Model;
 
-use Phalcon\Di;
 use Application\Database\MySQL\MapperContainer;
+use League\Container\Container;
 
 abstract class BaseModel
 {
     /**
-     * @var Di
+     * @var Container
      */
     protected $di;
 
     /**
-     * @param Di $di
+     * @param Container $di
      */
-    public function __construct(Di $di)
+    public function __construct(Container $di)
     {
         $this->di = $di;
     }
@@ -29,7 +29,7 @@ abstract class BaseModel
     }
 
     /**
-     * @return Di
+     * @return Container
      */
     public function getDi()
     {

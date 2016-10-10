@@ -2,16 +2,16 @@
 
 namespace Application;
 
+use League\Container\Container;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use Phalcon\Di;
 use Psr\Log\LoggerInterface;
 
 class MonologHelper
 {
     /**
-     * @var Di
+     * @var Container
      */
     protected $di;
 
@@ -26,9 +26,9 @@ class MonologHelper
     protected $defaultContext = [];
 
     /**
-     * @param Di $di
+     * @param Container $di
      */
-    public function __construct(Di $di)
+    public function __construct(Container $di)
     {
         $this->di = $di;
     }

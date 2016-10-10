@@ -4,12 +4,12 @@ namespace Application\Controller;
 
 class LogoutController extends BaseController
 {
-    public function indexAction()
+    public function handle(array $params = [])
     {
         if ($this->getUser() != null) {
-            $this->getMapperContainer()->getUserActivityMapper()->newActivity($this->getUser()->id, 'logout');
-            $this->session->destroy();
+            $this->newActivity('logout');
+            $this->getSession()->clear();
         }
-        return $this->response->redirect('/login');
+        return $this->redirect('/login');
     }
 }

@@ -23,15 +23,14 @@ class Version20160815141118 extends AbstractMigration
             . ' `name` VARCHAR(50) NOT NULL,'
             . ' `surname` VARCHAR(50) NOT NULL,'
             . ' `status` SMALLINT DEFAULT 1,'
-            . ' `role` VARCHAR(10),'
             . ' PRIMARY KEY (`id`),'
             . ' UNIQUE KEY `uniq_email` (`email`)'
             . ') ENGINE=InnoDB DEFAULT CHARSET=utf8;'
         );
         $password = password_hash('admin', PASSWORD_BCRYPT);
         $this->addSql(
-            'INSERT INTO `users` (`email`, `password`, `name`, `surname`, `status`, `role`) VALUES ('
-            . '"admin@admin.com", "' . $password . '", "admin", "admin", 1, "admin")'
+            'INSERT INTO `users` (`email`, `password`, `name`, `surname`, `status`) VALUES ('
+            . '"admin@admin.com", "' . $password . '", "admin", "admin", 1)'
         );
         $this->addSql(
             'CREATE TABLE `user_permission` ('

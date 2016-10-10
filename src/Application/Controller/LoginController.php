@@ -7,23 +7,23 @@ use Application\Pdo\Exception\RecordNotFoundException;
 
 class LoginController extends BaseController
 {
-    public function indexAction()
+    public function handle(array $params = [])
     {
         if ($this->getUser() != null) {
-            return $this->response->redirect('/');
+            return $this->redirect('/');
         }
         $templateParams = array(
             'form_messages' => array()
         );
-        if ($this->request->isPost()) {
-            $email = $this->request->get('email');
-            $password = $this->request->get('password');
+        if ($this->getRequest()->isMethod('POST')) {
+            $email = $this->getRequest()->get('email');
+            $password = $this->getRequest()->get('password');
             try {
                 $user = $this->getMapperContainer()->getUserMapper()->findOneObjectByEmail($email, User::STATUS_ACTIVE);
                 if (password_verify($password, $user->password)) {
-                    $this->session->set('app_user_id', $user->id);
+                    $this->getSession()->set('app_user_id', $user->id);
                     $this->getMapperContainer()->getUserActivityMapper()->newActivity($this->getUser()->id, 'login');
-                    return $this->response->redirect('/');
+                    return $this->redirect('/');
                 }
             } catch (RecordNotFoundException $exception) {
             }

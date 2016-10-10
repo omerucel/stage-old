@@ -2,12 +2,12 @@
 
 namespace Application\Pdo;
 
-use Phalcon\Di;
+use League\Container\Container;
 
 class Pager
 {
     /**
-     * @var Di
+     * @var Container
      */
     protected $di;
 
@@ -67,9 +67,9 @@ class Pager
     protected $perPageItem = 10;
 
     /**
-     * @param Di $di
+     * @param Container $di
      */
-    public function __construct(Di $di)
+    public function __construct(Container $di)
     {
         $this->di = $di;
     }
