@@ -36,7 +36,9 @@
                 </div>
                 <div class="modal-body">
                     <div class="loading">Yükleniyor...</div>
-                    <div id="editor" style="height: 400px;"></div>
+                    <div class="scroll">
+                        <div class="detail"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -47,45 +49,62 @@
         <li class="breadcrumb-item active">Hosting: {{ project.name }}</li>
     </ol>
     <div class="card">
-        <div class="card-header">Hosting: {{ project.name }}</div>
-        <div class="card-block">
-            {% if containers|length > 0 %}
+        <div class="card-header">
+            Hosting: {{ project.name }}
+            <div class="pull-md-right">
                 <div class="btn-group btn-group-sm">
                     <button class="btn btn-success" onclick="start(this);"><span class="fa fa-play"></span> Başlat</button>
                     <button class="btn btn-danger" onclick="stop(this);"><span class="fa fa-stop"></span> Durdur</button>
                     <button class="btn btn-info" onclick="openVhostModal({{ project.id }});"><span class="fa fa-edit"></span> Sanal Sunucu Dosyası</button>
                 </div>
-                <table class="table table-bordered table-hover" style="margin-top: 20px;">
-                    <tbody>
-                        {% for container in containers %}
-                            <tr>
-                                <td>
-                                    <span class="fa fa-server"></span> {{ container.Name[1:] }}
-                                    <div class="pull-lg-right">
-                                        <span class="tag {% if container.State.Running %}tag-success{% else %}tag-danger{% endif %}">{{ container.State.Status }}</span>
-                                        <button type="button" class="btn btn-info btn-sm" onclick="inspect('{{ container.Id }}');"><span class="fa fa-info-circle"></span> Detay</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>Proje kurulumu henüz yapılmamış. Lütfen butona tıklayarak işlemleri başlatınız. Bu işlem sırasında proje dosyaları kullanılarak docker konteynerları çalıştırılır.</p>
-                <a class="btn btn-primary btn-sm" href="/projects/server/setup?id={{ project.id }}"><span class="fa fa-gears"></span> Kurulumu Başlat</a>
-            {% endif %}
+            </div>
         </div>
+        <table class="table">
+            <tbody>
+                {% for container in containers %}
+                    <tr>
+                        <td>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <span class="fa fa-server"></span> {{ container.Name[1:] }}
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="pull-md-right">
+                                        <span class="tag {% if container.State.Running %}tag-success{% else %}tag-danger{% endif %}">{{ container.State.Status }}</span>
+                                        <button type="button" class="btn btn-sm" onclick="inspect('{{ container.Id }}');"><span class="fa fa-info-circle"></span> Detay</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding: 4px 8px; font-size: 13px;">
+                                {% for port in container.NetworkSettings.Ports|keys %}
+                                    {% for detail in container.NetworkSettings.Ports[port] %}
+                                        {{ port }} -> {{ detail.HostIp }}:{{ detail.HostPort }}
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}
 
+{% block css %}
+    <link rel="stylesheet" href="/assets/jquery.jsonview.min.css" />
+    <style type="text/css">
+        .scroll {
+            width: 100%;
+            height: 400px;
+            overflow: auto;
+        }
+    </style>
+{% endblock %}
+
 {% block js %}
+    <script type="text/javascript" src="/assets/jquery.jsonview.min.js"></script>
     <script type="text/javascript" src="/assets/ace/ace.js"></script>
     <script type="text/javascript">
-        var fileEditor = ace.edit('editor');
-        fileEditor.setTheme('ace/theme/monokai');
-        fileEditor.setReadOnly(true);
-        fileEditor.getSession().setMode("ace/mode/yaml");
-
         var vhostEditor = ace.edit('vhost');
         vhostEditor.setTheme('ace/theme/monokai');
         vhostEditor.getSession().setMode("ace/mode/lua");
@@ -118,15 +137,12 @@
 
         function inspect(containerId) {
             $('#container-info').modal('show');
+            $('#container-info .detail').hide();
             $('#container-info .loading').show();
-            $('#editor').hide();
             $.get('/projects/server/inspect?container_id=' + containerId)
                     .done(function (data) {
                         $('#container-info .loading').hide();
-                        $('#editor').show();
-                        setTimeout(function () {
-                            fileEditor.getSession().setValue(JSON.stringify(data, null, 2));
-                        }, 300);
+                        $('#container-info .detail').show().JSONView(JSON.stringify(data, null, 2));
                     })
                     .fail(function () {
                         alert('An error occurred!');

@@ -32,7 +32,7 @@ class Docker
             foreach ($response['output'] as $id) {
                 $inspectResponse = $this->inspect($id);
                 if ($inspectResponse['exitCode'] == 0) {
-                    $containers[] = json_decode($inspectResponse['output'][0]);
+                    $containers[] = json_decode($inspectResponse['output'][0], true);
                 }
             }
         }
