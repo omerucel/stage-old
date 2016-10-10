@@ -26,9 +26,8 @@ class ServerStartController extends BaseController
             $this->getResponse()->setStatusCode(404);
             return $this->getResponse();
         }
-        $projectDir = $this->getConfig()->base_path . '/websites/' . $project->name;
         $docker = new Docker($this->di);
-        $response = $docker->start($projectDir);
+        $response = $docker->start($project->getDirectory());
         if ($response['exitCode'] == 0) {
             $this->getResponse()->setStatusCode(200);
         } else {

@@ -59,35 +59,42 @@
                 </div>
             </div>
         </div>
-        <table class="table">
-            <tbody>
-                {% for container in containers %}
+        <table id="containers" class="table">
+            <tbody></tbody>
+        </table>
+    </div>
+    {% verbatim %}
+        <script id="container-list-template" type="text/x-handlebars-template">
+            {{#if containers}}
+                {{#each containers}}
                     <tr>
                         <td>
                             <div class="row">
                                 <div class="col-md-8">
-                                    <span class="fa fa-server"></span> {{ container.Name[1:] }}
+                                    <span class="fa fa-server"></span> {{name}}
                                 </div>
                                 <div class="col-md-4">
                                     <div class="pull-md-right">
-                                        <span class="tag {% if container.State.Running %}tag-success{% else %}tag-danger{% endif %}">{{ container.State.Status }}</span>
-                                        <button type="button" class="btn btn-sm" onclick="inspect('{{ container.Id }}');"><span class="fa fa-info-circle"></span> Detay</button>
+                                        <span class="tag {{#if is_running }}tag-success{{else}}tag-danger{{/if}}">{{status}}</span>
+                                        <button type="button" class="btn btn-sm" onclick="inspect('{{id}}');"><span class="fa fa-info-circle"></span> Detay</button>
                                     </div>
                                 </div>
                             </div>
                             <div style="padding: 4px 8px; font-size: 13px;">
-                                {% for port in container.NetworkSettings.Ports|keys %}
-                                    {% for detail in container.NetworkSettings.Ports[port] %}
-                                        {{ port }} -> {{ detail.HostIp }}:{{ detail.HostPort }}
-                                    {% endfor %}
-                                {% endfor %}
+                                {{#each ports}}
+                                    {{port}} -> {{hostIp}}:{{hostPort}}
+                                {{/each}}
                             </div>
                         </td>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                {{/each}}
+            {{else}}
+                <tr>
+                    <td colspan="2"><div class="alert alert-info">Herhangi bir konteyner bulunmamakta. Lütfen Başlat butonuna tıklayınız.</div></td>
+                </tr>
+            {{/if}}
+        </script>
+    {% endverbatim %}
 {% endblock %}
 
 {% block css %}
@@ -103,11 +110,47 @@
 
 {% block js %}
     <script type="text/javascript" src="/assets/jquery.jsonview.min.js"></script>
+    <script type="text/javascript" src="/assets/underscore.js"></script>
     <script type="text/javascript" src="/assets/ace/ace.js"></script>
+    <script type="text/javascript" src="/assets/handlebars.js"></script>
     <script type="text/javascript">
         var vhostEditor = ace.edit('vhost');
         vhostEditor.setTheme('ace/theme/monokai');
         vhostEditor.getSession().setMode("ace/mode/lua");
+        var containerListTemplate = Handlebars.compile($('#container-list-template').html());
+
+        function render() {
+            $('#containers tbody').html('<tr><td>Yükleniyor...</td></tr>');
+            $.get('/projects/containers?id=' + {{ project.id }})
+                    .done(function (containers) {
+                        containers = _.map(containers, function (item) {
+                            var ports = [];
+                            _.each(item.NetworkSettings.Ports, function (value, key) {
+                                _.each(value, function (hostPort) {
+                                    ports.push({
+                                        port: key,
+                                        hostIp: hostPort.HostIp,
+                                        hostPort: hostPort.HostPort
+                                    });
+                                });
+                            });
+                            return {
+                                id: item.Id,
+                                name: item.Name.substr(1),
+                                is_running: item.State.Running,
+                                status: item.State.Status,
+                                ports: ports
+                            }
+                        });
+                        containers = _.sortBy(containers, 'name');
+                        $('#containers tbody').html(containerListTemplate({
+                            containers: containers
+                        }));
+                    })
+                    .fail(function () {
+                        alert('An error occurred!');
+                    });
+        }
 
         function start(object) {
             var oldHtml = $(object).html();
@@ -121,6 +164,7 @@
                     .always(function () {
                         $(object).removeAttr('disabled');
                         $(object).html(oldHtml);
+                        render();
                     });
         }
 
@@ -132,6 +176,7 @@
                     .always(function () {
                         $(object).removeAttr('disabled');
                         $(object).html(oldHtml);
+                        render();
                     });
         }
 
@@ -192,5 +237,7 @@
         function closeVhostModal() {
             $('#vhost-info').modal('hide');
         }
+
+        render();
     </script>
 {% endblock %}

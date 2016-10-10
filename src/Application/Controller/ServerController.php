@@ -2,7 +2,6 @@
 
 namespace Application\Controller;
 
-use Application\Docker;
 use Application\Model\Permission;
 use Application\Pdo\Exception\RecordNotFoundException;
 
@@ -17,12 +16,8 @@ class ServerController extends BaseController
         } catch (RecordNotFoundException $exception) {
             return $this->redirect('/projects');
         }
-        $projectDir = $this->getConfig()->base_path . '/websites/' . $project->name;
-        $docker = new Docker($this->di);
-        $containers = $docker->getContainersInfo($projectDir);
         $templateParams = [
-            'project' => $project,
-            'containers' => $containers
+            'project' => $project
         ];
         return $this->render('projects/server.twig', $templateParams);
     }

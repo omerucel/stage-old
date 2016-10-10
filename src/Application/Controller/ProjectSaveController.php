@@ -110,7 +110,6 @@ class ProjectSaveController extends BaseController
 
             if (empty($templateParams['form_messages'])) {
                 $project->name = $name;
-                $projectDir = $this->getConfig()->base_path . '/websites/' . $project->name;
                 $this->getMapperContainer()->getProjectMapper()->save($project);
                 $this->getMapperContainer()->getProjectMapper()->updateProjectFiles($project->id, $files);
                 $this->getMapperContainer()->getUserActivityMapper()->newActivity(
@@ -118,8 +117,9 @@ class ProjectSaveController extends BaseController
                     Permission::PERM_PROJECT_SAVE,
                     array('affected_project_id' => $project->id)
                 );
+                $projectDir = $project->getDirectory();
                 $docker = new Docker($this->getDi());
-                $docker->stop($projectDir);
+                $docker->stop($project->getDirectory());
                 if (is_dir($projectDir) == false) {
                     mkdir($projectDir, 0777);
                 }

@@ -13,6 +13,14 @@ class Project extends BaseModel
     protected $files;
 
     /**
+     * @return string
+     */
+    public function getDirectory()
+    {
+        return $this->getDi()->get('config')->base_path . '/websites/' . $this->name;
+    }
+
+    /**
      * @return array
      */
     public function getFiles()

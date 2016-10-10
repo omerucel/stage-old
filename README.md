@@ -40,4 +40,5 @@ Bu dosya üzerinden hangi port numarasının, hangi sunucu adı ile yayınlanaca
 # Yapılacak İşler
 
 * [X] Phalcon gereksiniminin kaldırılması
-* [ ] Sunucu yönetimi kısmının iyileştirilmesi.
+* [X] Sunucu yönetimi kısmının iyileştirilmesi.
+* [ ] Docker konteyner logları görüntülenebilmeli
