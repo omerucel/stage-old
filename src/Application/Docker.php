@@ -66,22 +66,9 @@ class Docker
      * @param $directory
      * @return array
      */
-    public function restart($directory)
-    {
-        return $this->start($directory);
-    }
-
-    /**
-     * @param $directory
-     * @return array
-     */
     public function start($directory)
     {
-        $response = $this->stop($directory);
-        if ($response['exitCode'] == 0) {
-            return $this->composeExec(['-f', $directory . '/docker-compose.yml', 'up', '-d', '--build']);
-        }
-        return $response;
+        return $this->composeExec(['-f', $directory . '/docker-compose.yml', 'up', '-d']);
     }
 
     /**
@@ -91,6 +78,15 @@ class Docker
     public function stop($directory)
     {
         return $this->composeExec(['-f', $directory . '/docker-compose.yml', 'stop']);
+    }
+
+    /**
+     * @param $directory
+     * @return array
+     */
+    public function build($directory)
+    {
+        return $this->composeExec(['-f', $directory . '/docker-compose.yml', 'build']);
     }
 
     /**

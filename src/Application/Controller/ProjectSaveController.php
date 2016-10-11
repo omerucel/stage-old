@@ -137,6 +137,7 @@ class ProjectSaveController extends BaseController
                 foreach ($files as $file) {
                     file_put_contents($projectDir . '/' . $file['name'], $file['content']);
                 }
+                $docker->build($project->getDirectory());
                 $response = $docker->start($projectDir);
                 if ($response['exitCode'] !== 0) {
                     $templateParams['form_messages'][] = [
