@@ -98,9 +98,9 @@ class Docker
         array_unshift($args, $this->getConfig()->docker_compose_bin);
         $cmd = implode(' ', $args) . ' 2>&1';
         exec($cmd, $output, $exitCode);
-        $this->getLogger()->debug('Cmd:' . $cmd);
-        $this->getLogger()->debug('Output:' . json_encode($output));
-        $this->getLogger()->debug('ExitCode:' . $exitCode);
+        if ($exitCode !== 0) {
+            $this->getLogger()->error($cmd, ['Output' => json_encode($output), 'ExitCode' => $exitCode]);
+        }
         return [
             'output' => $output,
             'exitCode' => $exitCode
@@ -114,11 +114,11 @@ class Docker
     protected function dockerExec(array $args = array())
     {
         array_unshift($args, $this->getConfig()->docker_bin);
-        $cmd = implode(' ', $args);
+        $cmd = implode(' ', $args) . ' 2>&1';
         exec($cmd, $output, $exitCode);
-        $this->getLogger()->debug('Cmd:' . $cmd);
-        $this->getLogger()->debug('Output:' . json_encode($output));
-        $this->getLogger()->debug('ExitCode:' . $exitCode);
+        if ($exitCode !== 0) {
+            $this->getLogger()->error($cmd, ['Output' => json_encode($output), 'ExitCode' => $exitCode]);
+        }
         return [
             'output' => $output,
             'exitCode' => $exitCode
