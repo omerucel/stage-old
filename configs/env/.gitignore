@@ -1,1 +1,3 @@
-development.php
+*
+!.gitignore
+!development.php.sample
