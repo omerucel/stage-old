@@ -35,7 +35,7 @@ class Nginx
     protected function nginxExec(array $args = array())
     {
         array_unshift($args, $this->getConfig()->nginx_bin);
-        $cmd = implode(' ', $args) . ' 2>&1';
+        $cmd = 'sudo ' . implode(' ', $args) . ' 2>&1';
         exec($cmd, $output, $exitCode);
         if ($exitCode !== 0) {
             $this->getLogger()->error($cmd, ['Output' => json_encode($output), 'ExitCode' => $exitCode]);
