@@ -6,6 +6,7 @@ use Application\Docker;
 use Application\Model\Permission;
 use Application\Model\Project;
 use Application\Pdo\Exception\RecordNotFoundException;
+use Cocur\Slugify\Slugify;
 
 class ProjectSaveController extends BaseController
 {
@@ -37,7 +38,7 @@ class ProjectSaveController extends BaseController
             } catch (RecordNotFoundException $exception) {
                 return $this->redirect('/projects');
             }
-        } else if ($copyId > 0) {
+        } elseif ($copyId > 0) {
             try {
                 $project = $this->getMapperContainer()->getProjectMapper()->findOneObjectById($copyId);
             } catch (RecordNotFoundException $exception) {
@@ -109,7 +110,26 @@ class ProjectSaveController extends BaseController
             }
 
             if (empty($templateParams['form_messages'])) {
+                $isNewProject = $project->id == 0;
+                $oldProjectDir = $project->getDirectory();
+                $docker = new Docker($this->getDi());
+                $slugify = new Slugify(['rulesets' => ['default', 'turkish']]);
+                if ($isNewProject == false) {
+                    $response = $docker->stop($oldProjectDir);
+                    if ($response['exitCode'] !== 0) {
+                        $templateParams['form_messages'][] = [
+                            'message' => 'Sunucular durdurulamadı. ' . implode(' ', $response['output']),
+                            'type' => 'warning'
+                        ];
+                    } else {
+                        $templateParams['form_messages'][] = [
+                            'message' => 'Sunucular başarıyla durduruldu.',
+                            'type' => 'success'
+                        ];
+                    }
+                }
                 $project->name = $name;
+                $project->folder = $slugify->slugify($name);
                 $this->getMapperContainer()->getProjectMapper()->save($project);
                 $this->getMapperContainer()->getProjectMapper()->updateProjectFiles($project->id, $files);
                 $this->getMapperContainer()->getUserActivityMapper()->newActivity(
@@ -117,28 +137,18 @@ class ProjectSaveController extends BaseController
                     Permission::PERM_PROJECT_SAVE,
                     array('affected_project_id' => $project->id)
                 );
-                $projectDir = $project->getDirectory();
-                $docker = new Docker($this->getDi());
-                $response = $docker->stop($project->getDirectory());
-                if ($response['exitCode'] !== 0) {
-                    $templateParams['form_messages'][] = [
-                        'message' => 'Sunucular durdurulamadı. ' . implode(' ', $response['output']),
-                        'type' => 'warning'
-                    ];
-                } else {
-                    $templateParams['form_messages'][] = [
-                        'message' => 'Sunucular başarıyla durduruldu.',
-                        'type' => 'success'
-                    ];
+                $newProjectDir = $project->getDirectory();
+                if ($isNewProject == false && is_dir($oldProjectDir) && $oldProjectDir != $newProjectDir) {
+                    exec('mv ' . $oldProjectDir . ' ' . $newProjectDir);
                 }
-                if (is_dir($projectDir) == false) {
-                    mkdir($projectDir, 0777);
+                if (is_dir($newProjectDir) == false) {
+                    mkdir($newProjectDir, 0777);
                 }
                 foreach ($files as $file) {
-                    file_put_contents($projectDir . '/' . $file['name'], $file['content']);
+                    file_put_contents($newProjectDir . '/' . $file['name'], $file['content']);
                 }
                 $docker->build($project->getDirectory());
-                $response = $docker->start($projectDir);
+                $response = $docker->start($newProjectDir);
                 if ($response['exitCode'] !== 0) {
                     $templateParams['form_messages'][] = [
                         'message' => 'Sunucular başlatılamadı. ' . implode(' ', $response['output']),

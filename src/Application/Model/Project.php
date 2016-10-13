@@ -6,18 +6,19 @@ class Project extends BaseModel
 {
     public $id;
     public $name;
+    public $folder;
 
     /**
      * @var array
      */
-    protected $files;
+    protected $files = [];
 
     /**
      * @return string
      */
     public function getDirectory()
     {
-        return $this->getDi()->get('config')->base_path . '/websites/' . $this->name;
+        return $this->getDi()->get('config')->base_path . '/websites/' . $this->folder;
     }
 
     /**
@@ -25,7 +26,7 @@ class Project extends BaseModel
      */
     public function getFiles()
     {
-        if ($this->files == null && $this->id > 0) {
+        if (empty($this->files) && $this->id > 0) {
             $this->files = $this->getMapperContainer()->getProjectMapper()->getProjectFiles($this->id);
         }
         return $this->files;
@@ -46,7 +47,8 @@ class Project extends BaseModel
     {
         return array(
             'id' => $this->id,
-            'name' => $this->name
+            'name' => $this->name,
+            'folder' => $this->folder
         );
     }
 }

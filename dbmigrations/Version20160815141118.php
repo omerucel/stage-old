@@ -95,6 +95,7 @@ class Version20160815141118 extends AbstractMigration
             'CREATE TABLE `project` ('
             . ' `id` INT UNSIGNED AUTO_INCREMENT NOT NULL,'
             . ' `name` VARCHAR(50) NOT NULL,'
+            . ' `folder` VARCHAR(100) NOT NULL,'
             . ' PRIMARY KEY (`id`),'
             . ' UNIQUE KEY `uniq_name` (`name`)'
             . ') ENGINE=InnoDB DEFAULT CHARSET=utf8;'

@@ -113,9 +113,6 @@ Uygulama ile oluşturulan her bir proje Docker projesi olarak tanımlanır. Bu p
 **docker-compose.yml** isimli dosyalar özel dosyalardır. Bu isimleri kullanarak, ilgili özel dosyalar
 (ve diğer harici dosyalar) proje ekleme/güncelleme ekranından tanımlanabilir.
 
-Form kontrolleri güncellenene kadar proje adı tanımlarken arada boşluk olmamasına ve özel karakter kullanmamaya
-özen gösterilmesi gerekmektedir.
-
 Projeye eklenen dosyalar aynı dizinde bulunmaktadır. **Dockerfile** için **ADD**, **COPY** gibi komutlarda ve
 **docker-compose.yml** için **build:** gibi ayarlarda bu göz önünde bulundurulmalıdır. 
 
@@ -145,8 +142,8 @@ server {
 * [X] Phalcon gereksiniminin kaldırılması
 * [X] Sunucu yönetimi kısmının iyileştirilmesi.
 * [X] Docker konteyner logları görüntülenebilmeli
-* [ ] Form işlemlerinde kontroller iyileştirilmeli.
 * [ ] Giriş formu güvenlik önlemleri
 * [ ] Proje bazlı izin sistemi
 * [ ] İlk docker çalıştırma işlemi arkaplana atılabilir.
 * [ ] Tarayıcı üzerinden SSH bağlantısı yapılabilmeli.
+* [ ] Tema iyileştirilmeli.

@@ -14,13 +14,14 @@ class ProjectMapper extends BaseMapper
     public function save(Project $project)
     {
         $params = [
-            ':name' => $project->name
+            ':name' => $project->name,
+            ':folder' => $project->folder
         ];
         if ($project->id == 0) {
-            $sql = 'INSERT INTO project (name) VALUES (:name)';
+            $sql = 'INSERT INTO project (name, folder) VALUES (:name, :folder)';
             $project->id = $this->getWrapper()->insert($sql, $params);
         } else {
-            $sql = 'UPDATE project SET name =:name WHERE id =:id';
+            $sql = 'UPDATE project SET name =:name, folder =:folder WHERE id =:id';
             $params[':id'] = $project->id;
             $this->getWrapper()->query($sql, $params);
         }
