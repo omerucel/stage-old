@@ -67,13 +67,38 @@ Nginx ayar dosyasına proje dizinindeki nginx.conf.d dizini tanıtılmalı.
 include /data/projects/stage/nginx.conf.d/*.conf;
 ```
 
+## Projenin çalışması için gerekli nginx ayarları
+
+```
+server {
+        listen 80;
+        listen [::]:80;
+
+        client_max_body_size 8M;
+        root /data/projects/stage/public;
+        index index.html index.php;
+        server_name stage.example.com;
+
+        location / {
+                try_files $uri $uri/ /index.php$is_args$args;
+        }
+
+        location ~ \.php$ {
+                include snippets/fastcgi-php.conf;
+                fastcgi_param APPLICATION_ENV production;
+                fastcgi_pass unix:/var/run/php5-fpm.sock;
+        }
+}
+```
+
+
 ## Docker ve Docker Compose kurulumu
 
 Bazı dağıtımlarda paket yöneticisi ile eski versiyonlar kurulabiliyor. Bu yüzden aşağıdaki ilgili adreslerden
 son versiyonun kurulması önerilir:
 
-https://docs.docker.com/engine/installation/binaries/
-https://github.com/docker/compose/releases/
+* https://docs.docker.com/engine/installation/binaries/
+* https://github.com/docker/compose/releases/
 
 ## Docker servisinin çalıştırılması
 
@@ -117,11 +142,11 @@ server {
 
 # Yapılacak İşler
 
-[X] Phalcon gereksiniminin kaldırılması
-[X] Sunucu yönetimi kısmının iyileştirilmesi.
-[X] Docker konteyner logları görüntülenebilmeli
-[ ] Form işlemlerinde kontroller iyileştirilmeli.
-[ ] Giriş formu güvenlik önlemleri
-[ ] Proje bazlı izin sistemi
-[ ] İlk docker çalıştırma işlemi arkaplana atılabilir.
-[ ] Tarayıcı üzerinden SSH bağlantısı yapılabilmeli.
+* [X] Phalcon gereksiniminin kaldırılması
+* [X] Sunucu yönetimi kısmının iyileştirilmesi.
+* [X] Docker konteyner logları görüntülenebilmeli
+* [ ] Form işlemlerinde kontroller iyileştirilmeli.
+* [ ] Giriş formu güvenlik önlemleri
+* [ ] Proje bazlı izin sistemi
+* [ ] İlk docker çalıştırma işlemi arkaplana atılabilir.
+* [ ] Tarayıcı üzerinden SSH bağlantısı yapılabilmeli.
