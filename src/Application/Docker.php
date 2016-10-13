@@ -96,7 +96,7 @@ class Docker
     protected function composeExec(array $args = array())
     {
         array_unshift($args, $this->getConfig()->docker_compose_bin);
-        $cmd = implode(' ', $args) . ' 2>&1';
+        $cmd = 'sudo ' . implode(' ', $args) . ' 2>&1';
         exec($cmd, $output, $exitCode);
         if ($exitCode !== 0) {
             $this->getLogger()->error($cmd, ['Output' => json_encode($output), 'ExitCode' => $exitCode]);
@@ -114,7 +114,7 @@ class Docker
     protected function dockerExec(array $args = array())
     {
         array_unshift($args, $this->getConfig()->docker_bin);
-        $cmd = implode(' ', $args) . ' 2>&1';
+        $cmd = 'sudo ' . implode(' ', $args) . ' 2>&1';
         exec($cmd, $output, $exitCode);
         if ($exitCode !== 0) {
             $this->getLogger()->error($cmd, ['Output' => json_encode($output), 'ExitCode' => $exitCode]);
