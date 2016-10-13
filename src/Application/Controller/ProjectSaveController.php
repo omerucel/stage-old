@@ -47,6 +47,9 @@ class ProjectSaveController extends BaseController
         } else {
             $project = new Project($this->getDi());
         }
+        if ($project->id > 0 && $this->getUser()->isAllowedProject($project->id) == false) {
+            return $this->redirect('/projects');
+        }
         $files = array();
         foreach ($project->getFiles() as $fileName => $fileContent) {
             $files[] = [

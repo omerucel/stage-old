@@ -53,6 +53,26 @@ class UserMapper extends BaseMapper
     }
 
     /**
+     * @param $userId
+     * @param array $projects
+     */
+    public function updateUserProjects($userId, array $projects = array())
+    {
+        $sql = 'DELETE FROM user_project WHERE user_id =:user_id';
+        $this->getWrapper()->query($sql, [':user_id' => $userId]);
+        if (empty($projects) == false) {
+            $sql = 'INSERT INTO user_project (user_id, project_id) VALUES '
+                . substr(str_repeat('(?, ?),', count($projects)), 0, -1);
+            $params = array();
+            foreach ($projects as $projectId) {
+                $params[] = $userId;
+                $params[] = $projectId;
+            }
+            $this->getWrapper()->query($sql, $params);
+        }
+    }
+
+    /**
      * @param $id
      * @param null $status
      * @return User

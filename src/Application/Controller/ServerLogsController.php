@@ -3,7 +3,6 @@
 namespace Application\Controller;
 
 use Application\Docker;
-use Application\Model\Permission;
 use Application\Pdo\Exception\RecordNotFoundException;
 
 class ServerLogsController extends BaseController
@@ -16,12 +15,12 @@ class ServerLogsController extends BaseController
             $this->getResponse()->setContent('User not found');
             return $this->getResponse();
         }
-        if ($this->getUser()->isAllowed(Permission::PERM_PROJECT_SERVER) == false) {
+        $projectId = $this->getRequest()->get('project_id');
+        if ($this->getUser()->isAllowedProject($projectId) == false) {
             $this->getResponse()->setStatusCode(403);
             $this->getResponse()->setContent('Permission denied');
             return $this->getResponse();
         }
-        $projectId = $this->getRequest()->get('id');
         $serviceName = $this->getRequest()->get('service_name');
         try {
             $project = $this->getMapperContainer()->getProjectMapper()->findOneObjectById($projectId);

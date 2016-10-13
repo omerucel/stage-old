@@ -50,6 +50,14 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <div class="form-group {% if has_project_error %}has-danger{% endif %}">
+                        <label>Projeler</label>
+                        <select class="form-control" id="projects" name="projects[]" multiple="multiple">
+                            {% for project in projects %}
+                                <option value="{{ project.id }}" {% if project.id in form_data.selected_project_ids %}selected="selected"{% endif %}>{{ project.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 {% endif %}
                 <div class="form-group {% if has_password_error %}has-danger{% endif %}">
                     <label>Şifre</label>
@@ -84,6 +92,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
             $('#permissions').select2();
+            $('#projects').select2();
         });
     </script>
 {% endblock %}

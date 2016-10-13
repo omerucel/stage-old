@@ -2,17 +2,19 @@
 
 namespace Application\Controller;
 
-use Application\Model\Permission;
 use Application\Pdo\Exception\RecordNotFoundException;
 
 class ServerController extends BaseController
 {
     public function handle(array $params = [])
     {
-        $this->checkPermission(Permission::PERM_PROJECT_SERVER);
+        $this->checkPermission();
         try {
             $project = $this->getMapperContainer()->getProjectMapper()
-                ->findOneObjectById($this->getRequest()->get('id'));
+                ->findOneObjectById($this->getRequest()->get('project_id'));
+            if ($this->getUser()->isAllowedProject($project->id) == false) {
+                return $this->redirect('/projects');
+            }
         } catch (RecordNotFoundException $exception) {
             return $this->redirect('/projects');
         }

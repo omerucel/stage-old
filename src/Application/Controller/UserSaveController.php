@@ -53,6 +53,7 @@ class UserSaveController extends BaseController
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'selected_permission_ids' => array_values($user->getPermissions()),
+                'selected_project_ids' => array_keys($user->getProjects()),
                 'status' => $user->status
             )
         );
@@ -63,15 +64,20 @@ class UserSaveController extends BaseController
             $password = trim($this->getRequest()->get('password'));
             $passwordRepeat = trim($this->getRequest()->get('password_repeat'));
             $selectedPermissionIds = $this->getRequest()->get('permissions');
+            $selectedProjectIds = $this->getRequest()->get('projects');
             $status = $this->getRequest()->get('status') == 'on';
             if ($selectedPermissionIds == null) {
                 $selectedPermissionIds = array();
+            }
+            if ($selectedProjectIds == null) {
+                $selectedProjectIds = array();
             }
             $templateParams['form_data'] = array(
                 'email' => $email,
                 'name' => $name,
                 'surname' => $surname,
                 'selected_permission_ids' => $selectedPermissionIds,
+                'selected_project_ids' => $selectedProjectIds,
                 'status' => $status
             );
 
@@ -126,6 +132,17 @@ class UserSaveController extends BaseController
                         break;
                     }
                 }
+
+                foreach ($selectedProjectIds as $projectId) {
+                    if ($this->getMapperContainer()->getProjectMapper()->hasProjectId($projectId) == false) {
+                        $templateParams['form_messages'][] = [
+                            'message' => 'Lütfen geçerli bir proje seçiniz.',
+                            'type' => 'danger'
+                        ];
+                        $templateParams['has_project_error'] = true;
+                        break;
+                    }
+                }
             }
 
             if (empty($templateParams['form_messages'])) {
@@ -135,8 +152,10 @@ class UserSaveController extends BaseController
                 if (strlen($password) > 0) {
                     $user->password = password_hash($password, PASSWORD_BCRYPT);
                 }
-                if ($this->getUser()->isAllowed(Permission::PERM_USERS_SAVE) && $isCurrentUser == false) {
+                if ($this->getUser()->isAllowed(Permission::PERM_USERS_SAVE)) {
                     $user->status = $status;
+                    $this->getMapperContainer()->getUserMapper()
+                        ->updateUserProjects($user->id, $selectedProjectIds);
                     $this->getMapperContainer()->getUserMapper()
                         ->updateUserPermissions($user->id, $selectedPermissionIds);
                 }
@@ -163,6 +182,7 @@ class UserSaveController extends BaseController
         }
         if ($this->getUser()->isAllowed(Permission::PERM_USERS_SAVE)) {
             $templateParams['permissions'] = $this->getMapperContainer()->getPermissionMapper()->findAll();
+            $templateParams['projects'] = $this->getMapperContainer()->getProjectMapper()->findAll();
         }
         return $this->render('users/save.twig', $templateParams);
     }

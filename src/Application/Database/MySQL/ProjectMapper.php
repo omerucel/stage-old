@@ -49,6 +49,28 @@ class ProjectMapper extends BaseMapper
     }
 
     /**
+     * @param $userId
+     * @return array
+     */
+    public function findAllUserProjects($userId)
+    {
+        $sql = 'SELECT project.* FROM project'
+            . ' INNER JOIN user_project ON user_project.project_id = project.id'
+            . ' WHERE user_project.user_id =:user_id';
+        $params = [':user_id' => $userId];
+        return $this->getWrapper()->fetchAllObjects($sql, $params, 'Application\Model\Project', [$this->getDi()]);
+    }
+
+    /**
+     * @return array
+     */
+    public function findAll()
+    {
+        $sql = 'SELECT * FROM project ORDER BY name ASC';
+        return $this->getWrapper()->fetchAll($sql);
+    }
+
+    /**
      * @param $id
      * @return Project
      * @throws RecordNotFoundException
@@ -74,6 +96,18 @@ class ProjectMapper extends BaseMapper
             $sql.= ' AND id !=:id';
             $params[':id'] = $excludedId;
         }
+        return $this->getWrapper()->fetchColumn($sql, $params) > 0;
+    }
+
+
+    /**
+     * @param $id
+     * @return bool
+     */
+    public function hasProjectId($id)
+    {
+        $sql = 'SELECT COUNT(id) FROM project WHERE id =:id';
+        $params = [':id' => $id];
         return $this->getWrapper()->fetchColumn($sql, $params) > 0;
     }
 

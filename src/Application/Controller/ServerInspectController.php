@@ -3,7 +3,6 @@
 namespace Application\Controller;
 
 use Application\Docker;
-use Application\Model\Permission;
 
 class ServerInspectController extends BaseController
 {
@@ -15,7 +14,8 @@ class ServerInspectController extends BaseController
             $this->getResponse()->setContent('User not found');
             return $this->getResponse();
         }
-        if ($this->getUser()->isAllowed(Permission::PERM_PROJECT_SERVER_INSPECT) == false) {
+        $projectId = $this->getRequest()->get('project_id');
+        if ($this->getUser()->isAllowedProject($projectId) == false) {
             $this->getResponse()->setStatusCode(403);
             $this->getResponse()->setContent('Permission denied');
             return $this->getResponse();

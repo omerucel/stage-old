@@ -55,15 +55,7 @@ class Version20160815141118 extends AbstractMigration
             . '("users.list"),'
             . '("users.activities"),'
             . '("project.save"),'
-            . '("project.list"),'
-            . '("project.server"),'
-            . '("project.server.setup"),'
-            . '("project.server.start"),'
-            . '("project.server.restart"),'
-            . '("project.server.stop"),'
-            . '("project.server.inspect"),'
-            . '("project.server.vhost.get"),'
-            . '("project.server.vhost.save")'
+            . '("project.list")'
         );
         $this->addSql(
             'INSERT INTO `user_permission` (`user_id`, `permission_id`) VALUES '
@@ -71,15 +63,7 @@ class Version20160815141118 extends AbstractMigration
             . '(1, 2),'
             . '(1, 3),'
             . '(1, 4),'
-            . '(1, 5),'
-            . '(1, 6),'
-            . '(1, 7),'
-            . '(1, 8),'
-            . '(1, 9),'
-            . '(1, 10),'
-            . '(1, 11),'
-            . '(1, 12),'
-            . '(1, 13)'
+            . '(1, 5)'
         );
         $this->addSql(
             'CREATE TABLE `user_activity` ('

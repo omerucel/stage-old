@@ -2,7 +2,6 @@
 
 namespace Application\Controller;
 
-use Application\Model\Permission;
 use Application\Nginx;
 use Application\Pdo\Exception\RecordNotFoundException;
 
@@ -16,6 +15,12 @@ class VhostController extends BaseController
             $this->getResponse()->setContent('User not found');
             return $this->getResponse();
         }
+        $projectId = $this->getRequest()->get('project_id');
+        if ($this->getUser()->isAllowedProject($projectId) == false) {
+            $this->getResponse()->setStatusCode(403);
+            $this->getResponse()->setContent('Permission denied');
+            return $this->getResponse();
+        }
         if ($this->getRequest()->isMethod('POST')) {
             return $this->handlePost();
         } else {
@@ -25,14 +30,9 @@ class VhostController extends BaseController
 
     protected function handleGet()
     {
-        if ($this->getUser()->isAllowed(Permission::PERM_PROJECT_SERVER_VHOST_GET) == false) {
-            $this->getResponse()->setStatusCode(403);
-            $this->getResponse()->setContent('Permission denied');
-            return $this->getResponse();
-        }
-        $id = $this->getRequest()->get('id');
+        $projectId = $this->getRequest()->get('project_id');
         try {
-            $project = $this->getMapperContainer()->getProjectMapper()->findOneObjectById($id);
+            $project = $this->getMapperContainer()->getProjectMapper()->findOneObjectById($projectId);
         } catch (RecordNotFoundException $exception) {
             $this->getResponse()->setStatusCode(404);
             return $this->getResponse();
@@ -49,15 +49,10 @@ class VhostController extends BaseController
 
     protected function handlePost()
     {
-        if ($this->getUser()->isAllowed(Permission::PERM_PROJECT_SERVER_VHOST_SAVE) == false) {
-            $this->getResponse()->setStatusCode(403);
-            $this->getResponse()->setContent('Permission denied');
-            return $this->getResponse();
-        }
-        $id = $this->getRequest()->get('id');
+        $projectId = $this->getRequest()->get('project_id');
         $content = $this->getRequest()->get('content');
         try {
-            $project = $this->getMapperContainer()->getProjectMapper()->findOneObjectById($id);
+            $project = $this->getMapperContainer()->getProjectMapper()->findOneObjectById($projectId);
         } catch (RecordNotFoundException $exception) {
             $this->getResponse()->setStatusCode(404);
             return $this->getResponse();

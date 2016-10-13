@@ -20,12 +20,26 @@ class User extends BaseModel
     protected $permissions = array();
 
     /**
+     * @var array
+     */
+    protected $projects = array();
+
+    /**
      * @param $permission
      * @return bool
      */
     public function isAllowed($permission)
     {
         return isset($this->getPermissions()[$permission]);
+    }
+
+    /**
+     * @param $projectId
+     * @return bool
+     */
+    public function isAllowedProject($projectId)
+    {
+        return isset($this->getProjects()[$projectId]);
     }
 
     /**
@@ -37,6 +51,20 @@ class User extends BaseModel
             $this->permissions = $this->getMapperContainer()->getPermissionMapper()->findAllUserPermissions($this->id);
         }
         return $this->permissions;
+    }
+
+    /**
+     * @return array
+     */
+    public function getProjects()
+    {
+        if (empty($this->projects)) {
+            $projects = $this->getMapperContainer()->getProjectMapper()->findAllUserProjects($this->id);
+            foreach ($projects as $project) {
+                $this->projects[$project->id] = $project;
+            }
+        }
+        return $this->projects;
     }
 
     /**

@@ -3,7 +3,6 @@
 namespace Application\Controller;
 
 use Application\Docker;
-use Application\Model\Permission;
 use Application\Pdo\Exception\RecordNotFoundException;
 
 class ServerStopController extends BaseController
@@ -15,13 +14,13 @@ class ServerStopController extends BaseController
             $this->getResponse()->setStatusCode(401);
             return $this->getResponse();
         }
-        if ($this->getUser()->isAllowed(Permission::PERM_PROJECT_SERVER_STOP) == false) {
+        $projectId = $this->getRequest()->get('project_id');
+        if ($this->getUser()->isAllowedProject($projectId) == false) {
             $this->getResponse()->setStatusCode(403);
             return $this->getResponse();
         }
-        $id = $this->getRequest()->get('id');
         try {
-            $project = $this->getMapperContainer()->getProjectMapper()->findOneObjectById($id);
+            $project = $this->getMapperContainer()->getProjectMapper()->findOneObjectById($projectId);
         } catch (RecordNotFoundException $exception) {
             $this->getResponse()->setStatusCode(404);
             return $this->getResponse();

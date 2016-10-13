@@ -109,6 +109,8 @@ $ sudo /usr/local/bin/dockerd &
 
 # Kullanım
 
+İlk kurulum sonrası panel kullanıcı adı **admin@admin.com** şifre ise **admin** şeklindedir.
+
 Uygulama ile oluşturulan her bir proje Docker projesi olarak tanımlanır. Bu projeye ait **Dockerfile** ve 
 **docker-compose.yml** isimli dosyalar özel dosyalardır. Bu isimleri kullanarak, ilgili özel dosyalar
 (ve diğer harici dosyalar) proje ekleme/güncelleme ekranından tanımlanabilir.
@@ -142,8 +144,8 @@ server {
 * [X] Phalcon gereksiniminin kaldırılması
 * [X] Sunucu yönetimi kısmının iyileştirilmesi.
 * [X] Docker konteyner logları görüntülenebilmeli
+* [X] Proje bazlı izin sistemi
 * [ ] Giriş formu güvenlik önlemleri
-* [ ] Proje bazlı izin sistemi
 * [ ] İlk docker çalıştırma işlemi arkaplana atılabilir.
 * [ ] Tarayıcı üzerinden SSH bağlantısı yapılabilmeli.
 * [ ] Tema iyileştirilmeli.
