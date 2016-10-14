@@ -73,6 +73,20 @@ class UserMapper extends BaseMapper
     }
 
     /**
+     * @param $userId
+     * @param $projectId
+     */
+    public function setUserProject($userId, $projectId)
+    {
+        $sql = 'SELECT COUNT(*) FROM user_project WHERE user_id =:user_id AND project_id =:project_id';
+        $params = [':user_id' => $userId, ':project_id' => $projectId];
+        if ($this->getWrapper()->fetchColumn($sql, $params) == 0) {
+            $sql = 'INSERT INTO user_project (user_id, project_id) VALUES (:user_id, :project_id)';
+            $this->getWrapper()->insert($sql, $params);
+        }
+    }
+
+    /**
      * @param $id
      * @param null $status
      * @return User

@@ -135,6 +135,9 @@ class ProjectSaveController extends BaseController
                 $project->folder = $slugify->slugify($name);
                 $this->getMapperContainer()->getProjectMapper()->save($project);
                 $this->getMapperContainer()->getProjectMapper()->updateProjectFiles($project->id, $files);
+                if ($isNewProject) {
+                    $this->getMapperContainer()->getUserMapper()->setUserProject($this->getUser()->id, $project->id);
+                }
                 $this->getMapperContainer()->getUserActivityMapper()->newActivity(
                     $this->getUser()->id,
                     Permission::PERM_PROJECT_SAVE,
