@@ -21,41 +21,26 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for item in pager.getItems() %}
-                    <tr>
-                        <td>{{ item.id }}</td>
-                        <td>{{ item.name }}</td>
-                        <td>
-                            <a href="/projects/save?id={{ item.id }}"><span class="fa fa-edit"></span></a>
-                            <a href="/projects/save?copy_id={{ item.id }}"><span class="fa fa-copy"></span></a>
-                            <a href="/projects/server?project_id={{ item.id }}"><span class="fa fa-server"></span></a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="3">
-                            <div class="alert alert-info">
-                                Herhangi bir kayıt bulunmamakta.
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-                {% if pager.getLastPage() > 1 %}
-                    <tfoot>
+                    {% for item in items %}
                         <tr>
-                            <td colspan="2">
-                                {% include 'pagination.twig' with {
-                                    currentFilters: {},
-                                    currentPage: pager.getCurrentPage(),
-                                    paginationPath: "/projects",
-                                    lastPage: pager.getLastPage(),
-                                    showAlwaysFirstAndLast: true
-                                } only %}
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.name }}</td>
+                            <td>
+                                <a href="/projects/save?id={{ item.id }}"><span class="fa fa-edit"></span></a>
+                                <a href="/projects/save?copy_id={{ item.id }}"><span class="fa fa-copy"></span></a>
+                                <a href="/projects/server?project_id={{ item.id }}"><span class="fa fa-server"></span></a>
                             </td>
                         </tr>
-                    </tfoot>
-                {% endif %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3">
+                                <div class="alert alert-info">
+                                    Herhangi bir kayıt bulunmamakta.
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     </div>

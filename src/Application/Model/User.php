@@ -39,7 +39,7 @@ class User extends BaseModel
      */
     public function isAllowedProject($projectId)
     {
-        return isset($this->getProjects()[$projectId]);
+        return $this->isAllowed(Permission::PERM_PROJECT_LIST) || isset($this->getProjects()[$projectId]);
     }
 
     /**
