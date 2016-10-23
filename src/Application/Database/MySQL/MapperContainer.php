@@ -52,6 +52,14 @@ class MapperContainer
     }
 
     /**
+     * @return ProjectTaskMapper
+     */
+    public function getProjectTaskMapper()
+    {
+        return $this->getMapper('ProjectTaskMapper');
+    }
+
+    /**
      * @param $name
      * @return BaseMapper
      */

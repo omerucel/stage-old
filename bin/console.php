@@ -2,6 +2,7 @@
 
 namespace {
 
+    use Application\Console\TaskExecutorCommand;
     use Doctrine\DBAL\DriverManager;
     use Doctrine\DBAL\Migrations\Tools\Console\Command\DiffCommand;
     use Doctrine\DBAL\Migrations\Tools\Console\Command\ExecuteCommand;
@@ -18,22 +19,28 @@ namespace {
      * @var $di Container
      */
     $di = include(realpath(__DIR__ . '/../') . '/configs/bootstrap.php');
-    $di->get('config')->logger->default_name = 'console';
+    $di->get('logger_helper')->setDefaultName('console');
 
-    $consoleApp = new Application('CLI', '1.0');
-    $doctrineConn = DriverManager::getConnection(
-        array(
-            'driver' => 'pdo_mysql',
-            'pdo' => $di->get('pdo')
-        )
-    );
-    $consoleApp->getHelperSet()->set(new ConnectionHelper($doctrineConn));
-    $consoleApp->add(new DiffCommand());
-    $consoleApp->add(new MigrateCommand());
-    $consoleApp->add(new ExecuteCommand());
-    $consoleApp->add(new GenerateCommand());
-    $consoleApp->add(new LatestCommand());
-    $consoleApp->add(new StatusCommand());
-    $consoleApp->add(new VersionCommand());
-    $consoleApp->run();
+    try {
+        $consoleApp = new Application('CLI', '1.0');
+        $consoleApp->setCatchExceptions(false);
+        $doctrineConn = DriverManager::getConnection(
+            array(
+                'driver' => 'pdo_mysql',
+                'pdo' => $di->get('pdo')
+            )
+        );
+        $consoleApp->getHelperSet()->set(new ConnectionHelper($doctrineConn));
+        $consoleApp->add(new DiffCommand());
+        $consoleApp->add(new MigrateCommand());
+        $consoleApp->add(new ExecuteCommand());
+        $consoleApp->add(new GenerateCommand());
+        $consoleApp->add(new LatestCommand());
+        $consoleApp->add(new StatusCommand());
+        $consoleApp->add(new VersionCommand());
+        $consoleApp->add(new TaskExecutorCommand($di));
+        $consoleApp->run();
+    } catch (\Exception $exception) {
+        $di->get('logger_helper')->getLogger()->error($exception);
+    }
 }

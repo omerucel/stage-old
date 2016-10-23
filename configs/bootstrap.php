@@ -3,7 +3,7 @@
 namespace {
 
     use Application\Database\MySQL\MapperContainer;
-    use Application\MonologHelper;
+    use Application\Logger\LoggerHelper;
     use Application\Pdo\Wrapper;
     use League\Container\Container;
 
@@ -23,7 +23,10 @@ namespace {
         return json_decode(json_encode($configs));
     });
     $di->share('logger_helper', function () use ($di) {
-        return new MonologHelper($di);
+        $config = $di->get('config');
+        $helper = new LoggerHelper($config->logger->path, $config->environment);
+        $helper->setReqId($config->req_id);
+        return $helper;
     });
     $di->share('pdo', function () use ($di) {
         $config = $di->get('config');

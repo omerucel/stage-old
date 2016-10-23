@@ -25,24 +25,16 @@ $configs = array(
 $configs['pdo'] = array(
     'dsn' => 'mysql:host=127.0.0.1;port=8889;dbname=stage;charset=utf8',
     'username' => 'root',
-    'password' => 'root'
+    'password' => 'root',
+    'debug' => false
 );
 
 /**
  * Logger
  */
 $configs['logger'] = array(
-    'default_name' => 'default',
-    'default_path' => realpath($basePath . '/log'),
-    'default_level' => \Monolog\Logger::INFO
+    'path' => realpath($basePath . '/log'),
 );
-/**
- * supports different path and level for log name
- * $configs['logger']['app'] = array();
- * $configs['logger']['app']['path'] = realpath(BASE_PATH . '/logs');
- * $configs['logger']['app']['level'] = \Monolog\Logger::DEBUG;
- * $di->getLogger('app')->info('foo bar');
- */
 
 /**
  * Twig

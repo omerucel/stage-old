@@ -2,10 +2,10 @@
 
 namespace Application\Controller;
 
-use Application\Docker;
 use Application\Model\Permission;
 use Application\Model\Project;
 use Application\Pdo\Exception\RecordNotFoundException;
+use Application\Project\BackgroundTaskExecutor;
 use Cocur\Slugify\Slugify;
 
 class ProjectSaveController extends BaseController
@@ -113,61 +113,18 @@ class ProjectSaveController extends BaseController
             }
 
             if (empty($templateParams['form_messages'])) {
-                $isNewProject = $project->id == 0;
-                $oldProjectDir = $project->getDirectory();
-                $docker = new Docker($this->getDi());
                 $slugify = new Slugify(['rulesets' => ['default', 'turkish']]);
-                if ($isNewProject == false) {
-                    $response = $docker->stop($oldProjectDir);
-                    if ($response['exitCode'] !== 0) {
-                        $templateParams['form_messages'][] = [
-                            'message' => 'Sunucular durdurulamadı. ' . implode(' ', $response['output']),
-                            'type' => 'warning'
-                        ];
-                    } else {
-                        $templateParams['form_messages'][] = [
-                            'message' => 'Sunucular başarıyla durduruldu.',
-                            'type' => 'success'
-                        ];
-                    }
-                }
+                $oldProjectDir = $project->getDirectory();
                 $project->name = $name;
                 $project->folder = $slugify->slugify($name);
                 $this->getMapperContainer()->getProjectMapper()->save($project);
                 $this->getMapperContainer()->getProjectMapper()->updateProjectFiles($project->id, $files);
-                if ($isNewProject) {
+                if ($project->id != $id) {
                     $this->getMapperContainer()->getUserMapper()->setUserProject($this->getUser()->id, $project->id);
                 }
-                $this->getMapperContainer()->getUserActivityMapper()->newActivity(
-                    $this->getUser()->id,
-                    Permission::PERM_PROJECT_SAVE,
-                    array('affected_project_id' => $project->id)
-                );
-                $newProjectDir = $project->getDirectory();
-                if ($isNewProject == false && is_dir($oldProjectDir) && $oldProjectDir != $newProjectDir) {
-                    exec('mv ' . $oldProjectDir . ' ' . $newProjectDir);
-                }
-                if (is_dir($newProjectDir) == false) {
-                    mkdir($newProjectDir, 0777);
-                }
-                foreach ($files as $file) {
-                    file_put_contents($newProjectDir . '/' . $file['name'], $file['content']);
-                }
-                $docker->build($project->getDirectory());
-                $response = $docker->start($newProjectDir);
-                if ($response['exitCode'] !== 0) {
-                    $templateParams['form_messages'][] = [
-                        'message' => 'Sunucular başlatılamadı. ' . implode(' ', $response['output']),
-                        'type' => 'warning'
-                    ];
-                } else {
-                    $templateParams['form_messages'][] = [
-                        'message' => 'Sunucular başarıyla başlatıldı',
-                        'type' => 'success'
-                    ];
-                }
-
-                $message = 'Proje kaydedildi.';
+                $this->newActivity(Permission::PERM_PROJECT_SAVE, array('affected_project_id' => $project->id));
+                $taskExecutor = new BackgroundTaskExecutor($this->getDi());
+                $taskExecutor->executeSetupTask($project->id, $oldProjectDir);
                 if ($id == 0) {
                     $templateParams['form_data'] = array(
                         'name' => '',
@@ -176,7 +133,7 @@ class ProjectSaveController extends BaseController
                     );
                 }
                 $templateParams['form_messages'][] = array(
-                    'message' => $message,
+                    'message' => 'Proje kaydedildi.',
                     'type' => 'success'
                 );
             }

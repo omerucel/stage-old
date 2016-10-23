@@ -2,8 +2,8 @@
 
 namespace Application\Controller;
 
-use Application\Docker;
 use Application\Pdo\Exception\RecordNotFoundException;
+use Application\Project\BackgroundTaskExecutor;
 
 class ServerStopController extends BaseController
 {
@@ -25,13 +25,9 @@ class ServerStopController extends BaseController
             $this->getResponse()->setStatusCode(404);
             return $this->getResponse();
         }
-        $docker = new Docker($this->di);
-        $response = $docker->stop($project->getDirectory());
-        if ($response['exitCode'] == 0) {
-            $this->getResponse()->setStatusCode(200);
-        } else {
-            $this->getResponse()->setStatusCode(500);
-        }
+        $taskExecutor = new BackgroundTaskExecutor($this->getDi());
+        $taskExecutor->executeStopTask($project->id);
+        $this->getResponse()->setStatusCode(200);
         return $this->getResponse();
     }
 }

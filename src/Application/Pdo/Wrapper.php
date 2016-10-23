@@ -3,7 +3,6 @@
 namespace Application\Pdo;
 
 use League\Container\Container;
-use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Application\Pdo\Exception\RecordNotFoundException;
 
@@ -143,7 +142,7 @@ class Wrapper
      * @param array $params
      * @param string $class
      * @param array $constructParams
-     * @return \stdClass
+     * @return mixed
      * @throws RecordNotFoundException
      */
     public function fetchOneObject($sql, array $params = [], $class = '\stdClass', array $constructParams = [])
@@ -207,24 +206,41 @@ class Wrapper
      */
     public function execute($sql, array $params = array())
     {
+        $debug = $this->getDi()->get('config')->pdo->debug;
         /**
          * @var string $sqlId
          * @var string $startTime
          */
-        if ($this->isSqlLoggerOpen()) {
+        if ($debug) {
             $startTime = microtime(true);
-            $sqlId = md5($sql . json_encode($params));
-            $message = '[SQLID:' . $sqlId . '] ' . $sql . ' PARAMS => ' . json_encode($params);
-            $this->getLogger()->info($message);
         }
-        $stmt = $this->getPdo()->prepare($sql);
-        $stmt->execute($params);
-        if ($this->isSqlLoggerOpen()) {
-            $this->getLogger()->info('[SQLID:' . $sqlId . '] Executed in '
-                . number_format(microtime(true) - $startTime, 5)
-                . ' seconds. Affected Rows: ' . $stmt->rowCount());
+        try {
+            $stmt = $this->getPdo()->prepare($sql);
+            $stmt->execute($params);
+        } catch (\Exception $exception) {
+            $this->logSql($startTime, $sql, $params);
+            throw $exception;
+        }
+        if ($debug) {
+            $this->logSql($startTime, $sql, $params, $stmt->rowCount());
         }
         return $stmt;
+    }
+
+    /**
+     * @param $startTime
+     * @param $sql
+     * @param array $params
+     * @param int $affectedRows
+     */
+    protected function logSql($startTime, $sql, array $params = array(), $affectedRows = 0)
+    {
+        $context = [
+            'affected_rows' => $affectedRows,
+            'sql_params' => $params,
+            'execution_time' => number_format(microtime(true) - $startTime, 5)
+        ];
+        $this->getLogger()->info($sql, $context);
     }
 
     /**
@@ -259,14 +275,6 @@ class Wrapper
         $values = implode($values, ', ');
         $sql = 'INSERT INTO ' . $tableName . '(' . $columns . ') VALUES (' . $values . ')';
         return $sql;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSqlLoggerOpen()
-    {
-        return $this->getDi()->get('config')->logger->default_level == Logger::DEBUG;
     }
 
     /**
