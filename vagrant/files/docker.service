@@ -1,0 +1,8 @@
+[Unit]
+Description=Docker
+Before=httpd.service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/dockerd
