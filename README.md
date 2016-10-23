@@ -145,7 +145,9 @@ server {
 * [X] Sunucu yönetimi kısmının iyileştirilmesi.
 * [X] Docker konteyner logları görüntülenebilmeli
 * [X] Proje bazlı izin sistemi
+* [X] İlk docker çalıştırma işlemi arkaplana atılabilir.
+* [ ] nginx sanal sunucu portu otomatik olarak atanmalı.
+* [ ] Arkaplanda çalışan komut durumu panelden takip edilebilmeli.
 * [ ] Giriş formu güvenlik önlemleri
-* [ ] İlk docker çalıştırma işlemi arkaplana atılabilir.
 * [ ] Tarayıcı üzerinden SSH bağlantısı yapılabilmeli.
 * [ ] Tema iyileştirilmeli.

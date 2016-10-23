@@ -32,6 +32,7 @@ class ProjectSaveController extends BaseController
     {
         $id = $this->getRequest()->get('id');
         $copyId = $this->getRequest()->get('copy_id');
+        $files = array();
         if ($id > 0) {
             try {
                 $project = $this->getMapperContainer()->getProjectMapper()->findOneObjectById($id);
@@ -46,11 +47,18 @@ class ProjectSaveController extends BaseController
             }
         } else {
             $project = new Project($this->getDi());
+            $files[] = [
+                'name' => 'docker-compose.yml',
+                'content' => file_get_contents($this->getConfig()->base_path . '/websites/docker-compose.yml.template')
+            ];
+            $files[] = [
+                'name' => 'Dockerfile',
+                'content' => file_get_contents($this->getConfig()->base_path . '/websites/Dockerfile.template')
+            ];
         }
         if ($project->id > 0 && $this->getUser()->isAllowedProject($project->id) == false) {
             return $this->redirect('/projects');
         }
-        $files = array();
         foreach ($project->getFiles() as $fileName => $fileContent) {
             $files[] = [
                 'name' => $fileName,
