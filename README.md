@@ -13,7 +13,7 @@ Projelerin docker ile nginx üzerinden sunulmasını sağlar.
 
 Aşağıdaki komutla örnek ayarlar ilgili ortam ayarı için tanımlanabilir:
 ```bash
-$ cp configs/env/development.php.sample configs/env/$APPLICATION_ENV.php
+$ cp configs/env/development.php configs/env/$APPLICATION_ENV.php
 ```
 
 Örnek ayar dosyası:
