@@ -18,31 +18,33 @@
             <li class="breadcrumb-item active">Kullanıcı {% if id > 0 %}Güncelle{% else %}Ekle{% endif %}</li>
         {% endif %}
     </ol>
-    <div class="card">
-        <div class="card-header">
-            {% if user.id == id %}
-                Bilgilerim
-            {% else %}
-                Kullanıcı {% if id > 0 %}Güncelle{% else %}Ekle{% endif %}
-            {% endif %}
+    <div class="box box-primary">
+        <div class="box-header with-border">
+            <h3 class="box-title">
+                {% if user.id == id %}
+                    Bilgilerim
+                {% else %}
+                    Kullanıcı {% if id > 0 %}Güncelle{% else %}Ekle{% endif %}
+                {% endif %}
+            </h3>
         </div>
-        <div class="card-block">
+        <div class="box-body">
             {% include "messages.twig" %}
             <form method="post">
-                <div class="form-group {% if has_email_error %}has-danger{% endif %}">
+                <div class="form-group {% if has_email_error %}has-error{% endif %}">
                     <label>E-Posta Adresi</label>
                     <input type="text" class="form-control" name="email" value="{{ form_data.email }}" />
                 </div>
-                <div class="form-group {% if has_name_error %}has-danger{% endif %}">
+                <div class="form-group {% if has_name_error %}has-error{% endif %}">
                     <label>Ad</label>
                     <input type="text" class="form-control" name="name" value="{{ form_data.name }}" />
                 </div>
-                <div class="form-group {% if has_surname_error %}has-danger{% endif %}">
+                <div class="form-group {% if has_surname_error %}has-error{% endif %}">
                     <label>Soyad</label>
                     <input type="text" class="form-control" name="surname" value="{{ form_data.surname }}" />
                 </div>
                 {% if user.isAllowed('users.save') %}
-                    <div class="form-group {% if has_permission_error %}has-danger{% endif %}">
+                    <div class="form-group {% if has_permission_error %}has-error{% endif %}">
                         <label>İzinler</label>
                         <select class="form-control" id="permissions" name="permissions[]" multiple="multiple">
                             {% for permission in permissions %}
@@ -50,7 +52,7 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="form-group {% if has_project_error %}has-danger{% endif %}">
+                    <div class="form-group {% if has_project_error %}has-error{% endif %}">
                         <label>Projeler</label>
                         <select class="form-control" id="projects" name="projects[]" multiple="multiple">
                             {% for project in projects %}
@@ -59,20 +61,19 @@
                         </select>
                     </div>
                 {% endif %}
-                <div class="form-group {% if has_password_error %}has-danger{% endif %}">
+                <div class="form-group {% if has_password_error %}has-error{% endif %}">
                     <label>Şifre</label>
                     <input type="password" class="form-control" name="password" />
                 </div>
-                <div class="form-group {% if has_password_error %}has-danger{% endif %}">
+                <div class="form-group {% if has_password_error %}has-error{% endif %}">
                     <label>Şifre Tekrarı</label>
                     <input type="password" class="form-control" name="password_repeat" />
                 </div>
                 {% if user.isAllowed('users.save') %}
-                    <div class="form-group {% if has_status_error %}has-danger{% endif %}">
-                        <label>Durumu</label>
-                        <div class="checkbox">
-                            <input type="checkbox" name="status" {% if form_data.status %}checked="checked"{% endif %} /> Aktif
-                        </div>
+                    <div class="form-group {% if has_status_error %}has-error{% endif %}">
+                        <label>
+                            <input type="checkbox" name="status" class="minimal" {% if form_data.status %}checked="checked"{% endif %} /> Aktif
+                        </label>
                     </div>
                 {% endif %}
                 <div class="form-actions">
@@ -84,6 +85,7 @@
 {% endblock %}
 
 {% block css %}
+    {{ parent() }}
     <link rel="stylesheet" type="text/css" href="/assets/select2/css/select2.min.css" />
 {% endblock %}
 
@@ -91,8 +93,12 @@
     <script type="text/javascript" src="/assets/select2/js/select2.full.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            $('#permissions').select2();
-            $('#projects').select2();
+            $('#permissions').select2({
+                theme: 'classic'
+            });
+            $('#projects').select2({
+                theme: 'classic'
+            });
         });
     </script>
 {% endblock %}

@@ -64,13 +64,14 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/">Panel</a></li>
         <li class="breadcrumb-item"><a href="/projects">Projeler</a></li>
-        <li class="breadcrumb-item active">Hosting: {{ project.name }}</li>
+        <li class="breadcrumb-item active">{{ project.name }}</li>
     </ol>
-    <div class="card">
-        <div class="card-header">
-            Hosting: {{ project.name }}
-            <div class="pull-md-right">
+    <div class="box box-primary">
+        <div class="box-header">
+            <h3 class="box-title">{{ project.name }}</h3>
+            <div class="box-tools">
                 <div class="btn-group btn-group-sm">
+                    <button class="btn" onclick="setup(this);"><span class="fa fa-ship"></span> Kur</button>
                     <button class="btn btn-success" onclick="start(this);"><span class="fa fa-play"></span> Başlat</button>
                     <button class="btn btn-danger" onclick="stop(this);"><span class="fa fa-stop"></span> Durdur</button>
                     <button class="btn btn-info" onclick="openVhostModal();"><span class="fa fa-edit"></span> Sanal Sunucu Dosyası</button>
@@ -93,8 +94,8 @@
                                     <span class="fa fa-server"></span> {{name}}
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="pull-md-right">
-                                        <span class="tag {{#if is_running }}tag-success{{else}}tag-danger{{/if}}">{{status}}</span>
+                                    <div class="pull-right">
+                                        <span class="label {{#if is_running }}label-success{{else}}label-danger{{/if}}">{{status}}</span>
                                         <button type="button" class="btn btn-sm" onclick="inspect('{{id}}');"><span class="fa fa-info-circle"></span> Detay</button>
                                         <button type="button" class="btn btn-sm" onclick="logs('{{name}}');"><span class="fa fa-history"></span> Loglar</button>
                                     </div>
@@ -118,6 +119,7 @@
 {% endblock %}
 
 {% block css %}
+    {{ parent() }}
     <link rel="stylesheet" href="/assets/jquery.jsonview.min.css" />
     <style type="text/css">
         .scroll {
@@ -170,6 +172,22 @@
                     })
                     .fail(function () {
                         alert('An error occurred!');
+                    });
+        }
+
+        function setup(object) {
+            var oldHtml = $(object).html();
+            $(object).attr('disabled', 'disabled');
+            $(object).html('Starting...');
+            $.post('/projects/server/setup?project_id=' + projectId)
+                    .done(function () {
+                    })
+                    .fail(function () {
+                    })
+                    .always(function () {
+                        $(object).removeAttr('disabled');
+                        $(object).html(oldHtml);
+                        render();
                     });
         }
 

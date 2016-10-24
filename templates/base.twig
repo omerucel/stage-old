@@ -5,16 +5,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>{% block title %}{% endblock %} - Panel</title>
-    <link href="/assets/tether/css/tether.min.css" rel="stylesheet" />
-    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/assets/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/assets/admin-lte/css/AdminLTE.min.css" rel="stylesheet" />
+    <link href="/assets/admin-lte/css/skins/skin-blue-light.min.css" rel="stylesheet" />
     <link href="/assets/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
     {% block css %}{% endblock %}
 </head>
-<body>
+<body  class="skin-blue-light sidebar-mini sidebar-collapse">
     {% block body %}{% endblock %}
     <script src="/assets/jquery-3.0.0.min.js"></script>
-    <script src="/assets/tether/js/tether.min.js"></script>
-    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/assets/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script src="/assets/admin-lte/js/app.min.js"></script>
     {% block js %}{% endblock %}
 </body>
 </html>

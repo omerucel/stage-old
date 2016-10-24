@@ -1,57 +1,102 @@
 {% extends 'base.twig' %}
 
 {% block body %}
-    <div class="container-fluid" style="margin-top: 10px;">
-        <nav class="navbar navbar-light bg-faded">
-            <button class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#exCollapsingNavbar2" aria-controls="exCollapsingNavbar2" aria-expanded="false" aria-label="Toggle navigation">
-                &#9776;
-            </button>
-            <div class="collapse navbar-toggleable-xs" id="exCollapsingNavbar2">
-                <a class="navbar-brand" href="/">Panel</a>
-                <ul class="nav navbar-nav">
+    <div class="wrapper">
+        <header class="main-header">
+            <!-- Logo -->
+            <a href="/" class="logo"><span class="fa fa-cloud"></span></a>
+            <!-- Header Navbar -->
+            <nav class="navbar navbar-static-top" role="navigation">
+                <!-- Sidebar toggle button-->
+                <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
+                </a>
+                <!-- Navbar Right Menu -->
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown user user-menu">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <img src="/assets/images/profile.png" class="user-image">
+                                <span class="hidden-xs">{{ user.name }} {{ user.surname }}</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="user-header">
+                                    <img src="/assets/images/profile.png" class="img-circle">
+                                    <p>{{ user.name }} {{ user.surname }}</p>
+                                </li>
+                                <!-- Menu Footer-->
+                                <li class="user-footer">
+                                    <div class="pull-left">
+                                        <a href="/users/save?id={{ user.id }}" class="btn btn-default btn-flat">Bilgilerim</a>
+                                    </div>
+                                    <div class="pull-right">
+                                        <a href="/logout" class="btn btn-default btn-flat">Oturumu Kapat</a>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+        <aside class="main-sidebar">
+            <section class="sidebar">
+                <ul class="sidebar-menu">
                     {% if user.isAllowed('project.list') or user.isAllowed('project.save') %}
-                        <li class="nav-item dropdown {% if page == 'projects' %}active{% endif %}">
-                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Projeler</a>
-                            <div class="dropdown-menu">
-                                {% if user.isAllowed('project.save') %}
-                                    <a class="dropdown-item" href="/projects/save">Yeni Oluştur</a>
-                                {% endif %}
+                        <li class="treeview">
+                            <a href="#">
+                                <i class="fa fa-server"></i> <span>Projeler</span>
+                                <span class="pull-right-container">
+                                  <i class="fa fa-angle-down pull-right"></i>
+                                </span>
+                            </a>
+                            <ul class="treeview-menu">
                                 {% if user.isAllowed('project.list') %}
-                                    <a class="dropdown-item" href="/projects">Listele</a>
+                                    <li><a href="/projects">Listele</a></li>
                                 {% endif %}
-                            </div>
+                                {% if user.isAllowed('project.save') %}
+                                    <li><a href="/projects/save">Oluştur</a></li>
+                                {% endif %}
+                            </ul>
                         </li>
                     {% endif %}
                     {% if user.isAllowed('users.list') or user.isAllowed('users.save') or user.isAllowed('users.activities') %}
-                        <li class="nav-item dropdown {% if page == 'users' %}active{% endif %}">
-                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Kullanıcılar</a>
-                            <div class="dropdown-menu">
-                                {% if user.isAllowed('users.save') %}
-                                    <a class="dropdown-item" href="/users/save">Yeni Oluştur</a>
-                                {% endif %}
+                        <li class="treeview">
+                            <a href="#">
+                                <i class="fa fa-users"></i> <span>Kullanıcılar</span>
+                                <span class="pull-right-container">
+                                  <i class="fa fa-angle-down pull-right"></i>
+                                </span>
+                            </a>
+                            <ul class="treeview-menu">
                                 {% if user.isAllowed('users.list') %}
-                                    <a class="dropdown-item" href="/users">Listele</a>
+                                    <li><a href="/users">Listele</a></li>
+                                {% endif %}
+                                {% if user.isAllowed('users.save') %}
+                                    <li><a href="/users/save">Yeni Ekle</a></li>
                                 {% endif %}
                                 {% if user.isAllowed('users.activities') %}
-                                    <a class="dropdown-item" href="/users/activities">Aktiviteler</a>
+                                    <li><a href="/users/activities">Aktiviteler</a></li>
                                 {% endif %}
-                            </div>
+                            </ul>
                         </li>
                     {% endif %}
-                    <li class="nav-item dropdown {% if page == 'settings' %}active{% endif %}">
-                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Hesabım</a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="/users/save?id={{ user.id }}">Bilgilerim</a>
-                            <a class="dropdown-item" href="/logout">Oturumu Kapat</a>
-                        </div>
-                    </li>
                 </ul>
-            </div>
-        </nav>
-    </div>
-    <div class="container-fluid" style="margin-top: 30px;">
-        <div class="col-lg-12">
-            {% block content %}{% endblock %}
+            </section>
+        </aside>
+        <div class="content-wrapper">
+            <section class="content">
+                {% block content %}{% endblock %}
+            </section>
         </div>
+        <footer class="main-footer"></footer>
     </div>
+{% endblock %}
+
+{% block css %}
+    <style type="text/css">
+        .breadcrumb-item a{
+            color: #000;
+        }
+    </style>
 {% endblock %}

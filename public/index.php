@@ -57,6 +57,7 @@ namespace {
             $collector->addRoute(['GET', 'POST'], '/projects/save', 'Application\Controller\ProjectSaveController');
             // Server
             $collector->addRoute(['GET', 'POST'], '/projects/server', 'Application\Controller\ServerController');
+            $collector->addRoute('POST', '/projects/server/setup', 'Application\Controller\ServerSetupController');
             $collector->addRoute('POST', '/projects/server/start', 'Application\Controller\ServerStartController');
             $collector->addRoute('POST', '/projects/server/stop', 'Application\Controller\ServerStopController');
             $collector->addRoute('GET', '/projects/server/inspect', 'Application\Controller\ServerInspectController');
