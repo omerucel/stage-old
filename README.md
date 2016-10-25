@@ -43,8 +43,8 @@ return $configs;
 
 İlgili klasörlere aşağıdaki gibi php-fpm kullanıcısı için haklar tanımlanmalı, gerektiği durumlarda yazma izni verilmeli.
 ```
-$ chown -R www-data nginx.conf.d log tmp websites
-$ chmod -R 775 nginx.conf.d log tmp websites
+$ chown -R www-data lock nginx.conf.d log tmp websites
+$ chmod -R 775 lock nginx.conf.d log tmp websites
 ```
 
 ## Veritabanının hazırlanması
