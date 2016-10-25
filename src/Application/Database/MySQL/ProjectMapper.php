@@ -15,13 +15,15 @@ class ProjectMapper extends BaseMapper
     {
         $params = [
             ':name' => $project->name,
-            ':folder' => $project->folder
+            ':folder' => $project->folder,
+            ':vhost' => $project->vhost,
+            ':port' => $project->port
         ];
         if ($project->id == 0) {
-            $sql = 'INSERT INTO project (name, folder) VALUES (:name, :folder)';
+            $sql = 'INSERT INTO project (name, folder, vhost, port) VALUES (:name, :folder, :vhost, :port)';
             $project->id = $this->getWrapper()->insert($sql, $params);
         } else {
-            $sql = 'UPDATE project SET name =:name, folder =:folder WHERE id =:id';
+            $sql = 'UPDATE project SET name =:name, folder =:folder, vhost =:vhost, port =:port WHERE id =:id';
             $params[':id'] = $project->id;
             $this->getWrapper()->query($sql, $params);
         }

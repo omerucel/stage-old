@@ -5,26 +5,6 @@
 {% endblock %}
 
 {% block content %}
-    <div id="vhost-info" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" onclick="closeModal(this);">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    <h4 class="modal-title">Sanal Sunucu Dosyası</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="loading">Yükleniyor...</div>
-                    <div id="vhost" style="height: 400px;"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="saveFile(this);">Kaydet</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal(this);">İptal</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <div id="container-info" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -71,10 +51,9 @@
             <h3 class="box-title">{{ project.name }}</h3>
             <div class="box-tools">
                 <div class="btn-group btn-group-sm">
-                    <button class="btn" onclick="setup(this);"><span class="fa fa-ship"></span> Kur</button>
+                    <button class="btn btn-warning" onclick="setup(this);"><span class="fa fa-ship"></span> Yeniden Kur</button>
                     <button class="btn btn-success" onclick="start(this);"><span class="fa fa-play"></span> Başlat</button>
                     <button class="btn btn-danger" onclick="stop(this);"><span class="fa fa-stop"></span> Durdur</button>
-                    <button class="btn btn-info" onclick="openVhostModal();"><span class="fa fa-edit"></span> Sanal Sunucu Dosyası</button>
                     <button class="btn" onclick="logs();"><span class="fa fa-history"></span> Loglar</button>
                 </div>
             </div>
@@ -137,9 +116,6 @@
     <script type="text/javascript" src="/assets/handlebars.js"></script>
     <script type="text/javascript">
         var projectId = {{ project.id }};
-        var vhostEditor = ace.edit('vhost');
-        vhostEditor.setTheme('ace/theme/monokai');
-        vhostEditor.getSession().setMode("ace/mode/lua");
         var containerListTemplate = Handlebars.compile($('#container-list-template').html());
 
         function render() {
@@ -250,45 +226,10 @@
                     });
         }
 
-        function openVhostModal() {
-            $('#vhost-info').modal('show');
-            $('#vhost-info .loading').show();
-            $('#vhost').hide();
-            $.get('/projects/vhost?project_id=' + projectId)
-                    .always(function (data) {
-                        $('#vhost-info .loading').hide();
-                        $('#vhost').show();
-                        if (data.status == 200) {
-                            setTimeout(function () {
-                                vhostEditor.getSession().setValue(data.responseText);
-                            }, 300);
-                        } else if (data.status == 404) {
-                            setTimeout(function () {
-                                vhostEditor.getSession().setValue('');
-                            }, 300);
-                        }
-                    });
-        }
-
-        function saveFile(object) {
-            var oldHtml = $(object).html();
-            $(object).attr('disabled', 'disabled');
-            $(object).html('Saving...');
-            $.post('/projects/vhost?project_id=' + projectId, {content: vhostEditor.getSession().getValue()})
-                    .always(function (data) {
-                        if (data.status == 200) {
-                            alert('Kaydedildi.');
-                        } else {
-                            alert('Kaydedilemedi.');
-                        }
-                        $(object).removeAttr('disabled');
-                        $(object).html(oldHtml);
-                    });
-        }
-
         function closeModal(e) {
             $(e).parents('.modal').modal('hide');
         }
+
         render();
     </script>
 {% endblock %}

@@ -25,7 +25,7 @@ class ContainersController extends BaseController
             $this->getResponse()->setStatusCode(404);
             return $this->getResponse();
         }
-        $docker = new Docker($this->di);
+        $docker = $this->getDi()->get('docker');
         $containers = $docker->getContainersInfo($project->getDirectory());
         $this->getResponse()->setContent(json_encode($containers));
         return $this->getResponse();

@@ -32,12 +32,13 @@ class SetupExecutor extends ExecutorAbstract implements Executor
         $this->stopProject();
         $this->updateFiles();
         $this->buildAndStartProject();
+        $this->container->get('vhost_updater')->update($this->task->getProject());
     }
 
     public function prepare()
     {
         $this->isNewProject = is_dir($this->task->getProject()->getDirectory()) == false;
-        $this->docker = new Docker($this->container);
+        $this->docker = $this->container->get('docker');
         $this->newProjectDir = $this->task->getProject()->getDirectory();
         $this->oldProjectDir = $this->task->getData()->old_project_dir;
     }

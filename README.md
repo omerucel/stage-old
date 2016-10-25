@@ -2,8 +2,9 @@ Projelerin docker ile nginx üzerinden sunulmasını sağlar.
 
 # Gereksinimler
 
-* php 5.6.0
+* php 5.6.0+
 * docker
+* docker-compose 1.8.0+
 * nginx
 * php-fpm
 
@@ -118,26 +119,8 @@ Uygulama ile oluşturulan her bir proje Docker projesi olarak tanımlanır. Bu p
 Projeye eklenen dosyalar aynı dizinde bulunmaktadır. **Dockerfile** için **ADD**, **COPY** gibi komutlarda ve
 **docker-compose.yml** için **build:** gibi ayarlarda bu göz önünde bulundurulmalıdır. 
 
-Her bir projenin sunucu ekranında **Başlat**, **Durdur** işlemleri arkaplanda docker-compose komutunu
+Her bir projenin sunucu ekranında **Yeniden Kur**, **Başlat**, **Durdur** işlemleri arkaplanda docker-compose komutunu
 projeye bağlı docker-compose.yml dosyası için çalıştırmaktadır.
-
-Sunucu ekranındaki **Sanal Sunucu Dosyası** özelliği ise projenin nginx üzerinden sunulması için gerekli 
-sanal sunucu dosyasını güncellemeye yardımcı olur. Bu bilgi güncellendiğinde nginx ayarları yeniden yüklenmektedir.
-Bu dosya üzerinden hangi port numarasının, hangi sunucu adı ile yayınlanacağı nginx'e bildirilir.
-
-## Örnek Sanal Sunucu Dosyası
-
-```
-server {
-    listen 80;
-    listen [::]:80;
-    server_name project1.stage.com;
-    
-    location / {
-        proxy_pass http://127.0.0.1:32768;
-    }
-}
-```
 
 # Yapılacak İşler
 
@@ -147,7 +130,7 @@ server {
 * [X] Proje bazlı izin sistemi
 * [X] İlk docker çalıştırma işlemi arkaplana atılabilir.
 * [X] Tema iyileştirilmeli.
-* [ ] nginx sanal sunucu portu otomatik olarak atanmalı.
+* [X] nginx sanal sunucu portu otomatik olarak atanmalı.
 * [ ] Arkaplanda çalışan komut durumu panelden takip edilebilmeli.
 * [ ] Giriş formu güvenlik önlemleri
 * [ ] Tarayıcı üzerinden SSH bağlantısı yapılabilmeli.

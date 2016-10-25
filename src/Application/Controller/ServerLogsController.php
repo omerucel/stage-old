@@ -28,7 +28,7 @@ class ServerLogsController extends BaseController
             $this->getResponse()->setStatusCode(404);
             return $this->getResponse();
         }
-        $docker = new Docker($this->di);
+        $docker = $this->getDi()->get('docker');
         $response = $docker->logs($project->getDirectory(), $serviceName);
         $this->getResponse()->setStatusCode(200);
         $this->getResponse()->setContent(implode(PHP_EOL, $response['output']));

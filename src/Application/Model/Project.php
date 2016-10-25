@@ -7,6 +7,8 @@ class Project extends BaseModel
     public $id;
     public $name;
     public $folder;
+    public $vhost;
+    public $port;
 
     /**
      * @var array
@@ -48,7 +50,9 @@ class Project extends BaseModel
         return array(
             'id' => $this->id,
             'name' => $this->name,
-            'folder' => $this->folder
+            'folder' => $this->folder,
+            'vhost' => $this->vhost,
+            'port' => $this->po
         );
     }
 }

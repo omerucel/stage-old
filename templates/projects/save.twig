@@ -48,6 +48,15 @@
                     <label>Proje Adı</label>
                     <input type="text" class="form-control" name="name" value="{{ form_data.name }}" />
                 </div>
+                <div class="form-group">
+                    <label>Sanal Sunucu Dosyası</label>
+                    <textarea class="form-control" rows="10" name="vhost">{{ form_data.vhost|raw }}</textarea>
+                    <p class="help-block"><span class="fa fa-info-circle"></span> $PORT$ kalıbı, ilgili hedef port numarasına sahip bir konteyner bulunduğunda sanal sunucu dosyasını güncellemek için kullanılır.</p>
+                </div>
+                <div class="form-group">
+                    <label>Hedef Port</label>
+                    <input type="text" class="form-control" name="port" value="{{ form_data.port }}" />
+                </div>
                 <table class="table table-bordered table-hover" id="file-container">
                     <thead>
                     <tr>
@@ -60,6 +69,7 @@
                 <div class="form-actions">
                     <button type="submit" class="btn btn-success"><span class="fa fa-save"></span> Kaydet</button>
                     <button type="button" class="btn btn-warning" onclick="showNewWindow();"><span class="fa fa-plus-square"></span> Yeni Dosya Ekle</button>
+                    <p class="help-block"><span class="fa fa-info-circle"></span> Kaydetme işleminin ardından arkaplanda sunucu kurulum işlemi başlatılır.</p>
                 </div>
             </form>
         </div>

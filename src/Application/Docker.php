@@ -2,22 +2,35 @@
 
 namespace Application;
 
-use League\Container\Container;
 use Psr\Log\LoggerInterface;
 
 class Docker
 {
     /**
-     * @var Container
+     * @var LoggerInterface
      */
-    protected $di;
+    protected $logger;
 
     /**
-     * @param Container $di
+     * @var string
      */
-    public function __construct(Container $di)
+    protected $dockerBin;
+
+    /**
+     * @var string
+     */
+    protected $dockerComposeBin;
+
+    /**
+     * @param $dockerBin
+     * @param $dockerComposeBin
+     * @param LoggerInterface|null $logger
+     */
+    public function __construct($dockerBin, $dockerComposeBin, LoggerInterface $logger = null)
     {
-        $this->di = $di;
+        $this->dockerBin = $dockerBin;
+        $this->dockerComposeBin = $dockerComposeBin;
+        $this->logger = $logger;
     }
 
     /**
@@ -95,11 +108,11 @@ class Docker
      */
     protected function composeExec(array $args = array())
     {
-        array_unshift($args, $this->getConfig()->docker_compose_bin);
+        array_unshift($args, $this->dockerComposeBin);
         $cmd = 'sudo ' . implode(' ', $args) . ' 2>&1';
         exec($cmd, $output, $exitCode);
-        if ($exitCode !== 0) {
-            $this->getLogger()->error($cmd, ['Output' => json_encode($output), 'ExitCode' => $exitCode]);
+        if ($exitCode !== 0 && $this->logger != null) {
+            $this->logger->error($cmd, ['Output' => json_encode($output), 'ExitCode' => $exitCode]);
         }
         return [
             'output' => $output,
@@ -113,11 +126,11 @@ class Docker
      */
     protected function dockerExec(array $args = array())
     {
-        array_unshift($args, $this->getConfig()->docker_bin);
+        array_unshift($args, $this->dockerBin);
         $cmd = 'sudo ' . implode(' ', $args) . ' 2>&1';
         exec($cmd, $output, $exitCode);
-        if ($exitCode !== 0) {
-            $this->getLogger()->error($cmd, ['Output' => json_encode($output), 'ExitCode' => $exitCode]);
+        if ($exitCode !== 0 && $this->logger != null) {
+            $this->logger->error($cmd, ['Output' => json_encode($output), 'ExitCode' => $exitCode]);
         }
         return [
             'output' => $output,
@@ -126,18 +139,10 @@ class Docker
     }
 
     /**
-     * @return \stdClass
+     * @param LoggerInterface $logger
      */
-    protected function getConfig()
+    public function setLogger(LoggerInterface $logger)
     {
-        return $this->di->get('config');
-    }
-
-    /**
-     * @return LoggerInterface
-     */
-    protected function getLogger()
-    {
-        return $this->di->get('logger_helper')->getLogger();
+        $this->logger = $logger;
     }
 }

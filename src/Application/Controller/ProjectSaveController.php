@@ -69,17 +69,25 @@ class ProjectSaveController extends BaseController
             $project->id = 0;
             $project->name = $project->name . ' Copy';
         }
+        if ($project->id == 0) {
+            $project->vhost = file_get_contents($this->getConfig()->base_path . '/nginx.conf.d/vhost.template');
+            $project->port = 80;
+        }
         $templateParams = array(
             'form_messages' => array(),
             'id' => $id,
             'page' => 'projects',
             'form_data' => array(
                 'name' => $project->name,
-                'files' => json_encode($files)
+                'vhost' => $project->vhost,
+                'port' => $project->port,
+                'files' => json_encode($files),
             )
         );
         if ($this->getRequest()->isMethod('POST')) {
             $name = trim($this->getRequest()->get('name'));
+            $vhost = trim($this->getRequest()->get('vhost'));
+            $port = intval($this->getRequest()->get('port'));
             $fileNames = $this->getRequest()->get('file_name');
             $fileContents = $this->getRequest()->get('file_content');
             if (is_array($fileNames) == false) {
@@ -102,6 +110,8 @@ class ProjectSaveController extends BaseController
             $templateParams['form_data'] = array(
                 'name' => $name,
                 'files' => json_encode($files),
+                'vhost' => $vhost,
+                'port' => $port
             );
 
             if ($this->getMapperContainer()->getProjectMapper()->isProjectNameUsing($name, $id) != null) {
@@ -125,6 +135,8 @@ class ProjectSaveController extends BaseController
                 $oldProjectDir = $project->getDirectory();
                 $project->name = $name;
                 $project->folder = $slugify->slugify($name);
+                $project->vhost = $vhost;
+                $project->port = $port;
                 $this->getMapperContainer()->getProjectMapper()->save($project);
                 $this->getMapperContainer()->getProjectMapper()->updateProjectFiles($project->id, $files);
                 if ($project->id != $id) {
@@ -137,6 +149,8 @@ class ProjectSaveController extends BaseController
                     $templateParams['form_data'] = array(
                         'name' => '',
                         'folder' => '',
+                        'vhost' => file_get_contents($this->getConfig()->base_path . '/nginx.conf.d/vhost.template'),
+                        'port' => 80,
                         'files' => json_encode([])
                     );
                 }

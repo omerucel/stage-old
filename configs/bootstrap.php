@@ -3,8 +3,11 @@
 namespace {
 
     use Application\Database\MySQL\MapperContainer;
+    use Application\Docker;
     use Application\Logger\LoggerHelper;
+    use Application\Nginx;
     use Application\Pdo\Wrapper;
+    use Application\Project\VhostUpdater;
     use League\Container\Container;
 
     $basePath = realpath(__DIR__ . '/..');
@@ -39,6 +42,22 @@ namespace {
     });
     $di->share('mapper_container', function () use ($di) {
         return new MapperContainer($di);
+    });
+    $di->share('docker', function () use ($di) {
+        $config = $di->get('config');
+        $logger = $di->get('logger_helper')->getLogger();
+        return new Docker($config->docker_bin, $config->docker_compose_bin, $logger);
+    });
+    $di->share('nginx', function () use ($di) {
+        $config = $di->get('config');
+        $logger = $di->get('logger_helper')->getLogger();
+        return new Nginx($config->nginx_bin, $logger);
+    });
+    $di->share('vhost_updater', function () use ($di) {
+        $docker = $di->get('docker');
+        $nginx = $di->get('nginx');
+        $confPath = realpath($di->get('config')->base_path) . '/nginx.conf.d';
+        return new VhostUpdater($docker, $nginx, $confPath);
     });
 
     return $di;

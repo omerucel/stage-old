@@ -21,7 +21,7 @@ class ServerInspectController extends BaseController
             return $this->getResponse();
         }
         $containerId = $this->getRequest()->get('container_id');
-        $docker = new Docker($this->di);
+        $docker = $this->getDi()->get('docker');
         $response = $docker->inspect($containerId);
         if ($response['exitCode'] == 0) {
             $this->getResponse()->setStatusCode(200);

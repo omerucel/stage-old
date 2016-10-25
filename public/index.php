@@ -63,8 +63,6 @@ namespace {
             $collector->addRoute('GET', '/projects/server/inspect', 'Application\Controller\ServerInspectController');
             $collector->addRoute('GET', '/projects/server/logs', 'Application\Controller\ServerLogsController');
             $collector->addRoute('GET', '/projects/containers', 'Application\Controller\ContainersController');
-            // Vhost
-            $collector->addRoute(['GET', 'POST'], '/projects/vhost', 'Application\Controller\VhostController');
             // Users
             $collector->addRoute('GET', '/users', 'Application\Controller\UsersController');
             $collector->addRoute('GET', '/users/activities', 'Application\Controller\UserActivitiesController');
