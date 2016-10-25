@@ -39,7 +39,29 @@ class ProjectTaskMapper extends BaseMapper
 
     /**
      * @param $taskId
-     * @param $command
+     * @return ProjectTask
+     */
+    public function findOneObjectByProject($taskId, $projectId)
+    {
+        $sql = 'SELECT * FROM project_task WHERE id =:id AND project_id =:project_id';
+        $params = [':id' => $taskId, ':project_id' => $projectId];
+        return $this->getWrapper()->fetchOneObject($sql, $params, ProjectTask::class, [$this->getDi()]);
+    }
+
+    /**
+     * @param $projectId
+     * @return ProjectTask
+     */
+    public function findCurrentSetupTaskByProject($projectId)
+    {
+        $sql = 'SELECT * FROM project_task WHERE project_id =:project_id AND status =:status AND name = "setup"'
+            . ' ORDER BY created_at DESC LIMIT 1';
+        $params = [':project_id' => $projectId, ':status' => ProjectTask::RUNNING];
+        return $this->getWrapper()->fetchOneObject($sql, $params, ProjectTask::class, [$this->getDi()]);
+    }
+
+    /**
+     * @param $taskId
      */
     public function setRunning($taskId)
     {

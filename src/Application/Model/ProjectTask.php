@@ -28,6 +28,14 @@ class ProjectTask extends BaseModel
     protected $dataObject;
 
     /**
+     * @return bool
+     */
+    public function isCompleted()
+    {
+        return $this->status == static::COMPLETED;
+    }
+
+    /**
      * @return Project
      */
     public function getProject()

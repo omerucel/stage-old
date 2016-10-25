@@ -26,8 +26,10 @@ class ServerStartController extends BaseController
             return $this->getResponse();
         }
         $taskExecutor = new BackgroundTaskExecutor($this->getDi());
-        $taskExecutor->executeStartTask($project->id);
-        $this->getResponse()->setStatusCode(200);
+        $taskId = $taskExecutor->executeStartTask($project->id);
+        $this->getResponse()
+            ->setStatusCode(200)
+            ->setContent(json_encode(['taskId' => $taskId]));
         return $this->getResponse();
     }
 }

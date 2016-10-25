@@ -23,29 +23,35 @@ class BackgroundTaskExecutor
     /**
      * @param $projectId
      * @param $oldProjectDir
+     * @return int
      */
     public function executeSetupTask($projectId, $oldProjectDir)
     {
         $taskId = $this->getProjectTaskMapper()->newTask($projectId, 'setup', ['old_project_dir' => $oldProjectDir]);
         $this->executeTask($taskId);
+        return $taskId;
     }
 
     /**
      * @param $projectId
+     * @return int
      */
     public function executeStartTask($projectId)
     {
         $taskId = $this->getProjectTaskMapper()->newTask($projectId, 'start');
         $this->executeTask($taskId);
+        return $taskId;
     }
 
     /**
      * @param $projectId
+     * @return int
      */
     public function executeStopTask($projectId)
     {
         $taskId = $this->getProjectTaskMapper()->newTask($projectId, 'stop');
         $this->executeTask($taskId);
+        return $taskId;
     }
 
     /**

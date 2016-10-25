@@ -26,8 +26,10 @@ class ServerStopController extends BaseController
             return $this->getResponse();
         }
         $taskExecutor = new BackgroundTaskExecutor($this->getDi());
-        $taskExecutor->executeStopTask($project->id);
-        $this->getResponse()->setStatusCode(200);
+        $taskId = $taskExecutor->executeStopTask($project->id);
+        $this->getResponse()
+            ->setStatusCode(200)
+            ->setContent(json_encode(['taskId' => $taskId]));
         return $this->getResponse();
     }
 }

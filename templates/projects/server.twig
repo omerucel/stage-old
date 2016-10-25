@@ -51,13 +51,14 @@
             <h3 class="box-title">{{ project.name }}</h3>
             <div class="box-tools">
                 <div class="btn-group btn-group-sm">
-                    <button class="btn btn-warning" onclick="setup(this);"><span class="fa fa-ship"></span> Yeniden Kur</button>
-                    <button class="btn btn-success" onclick="start(this);"><span class="fa fa-play"></span> Başlat</button>
-                    <button class="btn btn-danger" onclick="stop(this);"><span class="fa fa-stop"></span> Durdur</button>
-                    <button class="btn" onclick="logs();"><span class="fa fa-history"></span> Loglar</button>
+                    <button class="btn btn-warning server-button" onclick="setup(this);"><span class="fa fa-ship"></span> Yeniden Kur</button>
+                    <button class="btn btn-success server-button" onclick="start(this);"><span class="fa fa-play"></span> Başlat</button>
+                    <button class="btn btn-danger server-button" onclick="stop(this);"><span class="fa fa-stop"></span> Durdur</button>
+                    <button class="btn server-button" onclick="logs();"><span class="fa fa-history"></span> Loglar</button>
                 </div>
             </div>
         </div>
+        <div class="alert alert-setup" style="display: none;">Proje kuruluyor...</div>
         <table id="containers" class="table">
             <tbody></tbody>
         </table>
@@ -121,78 +122,76 @@
         function render() {
             $('#containers tbody').html('<tr><td>Yükleniyor...</td></tr>');
             $.get('/projects/containers?project_id=' + projectId)
-                    .done(function (containers) {
-                        containers = _.map(containers, function (item) {
-                            var ports = [];
-                            _.each(item.NetworkSettings.Ports, function (value, key) {
-                                _.each(value, function (hostPort) {
-                                    ports.push({
-                                        port: key,
-                                        hostIp: hostPort.HostIp,
-                                        hostPort: hostPort.HostPort
-                                    });
+                .done(function (containers) {
+                    containers = _.map(containers, function (item) {
+                        var ports = [];
+                        _.each(item.NetworkSettings.Ports, function (value, key) {
+                            _.each(value, function (hostPort) {
+                                ports.push({
+                                    port: key,
+                                    hostIp: hostPort.HostIp,
+                                    hostPort: hostPort.HostPort
                                 });
                             });
-                            return {
-                                id: item.Id,
-                                name: item.Config.Labels['com.docker.compose.service'],
-                                is_running: item.State.Running,
-                                status: item.State.Status,
-                                ports: ports
-                            }
                         });
-                        containers = _.sortBy(containers, 'name');
-                        $('#containers tbody').html(containerListTemplate({
-                            containers: containers
-                        }));
-                    })
-                    .fail(function () {
-                        alert('An error occurred!');
+                        return {
+                            id: item.Id,
+                            name: item.Config.Labels['com.docker.compose.service'],
+                            is_running: item.State.Running,
+                            status: item.State.Status,
+                            ports: ports
+                        }
                     });
+                    containers = _.sortBy(containers, 'name');
+                    $('#containers tbody').html(containerListTemplate({
+                        containers: containers
+                    }));
+                })
+                .fail(function () {
+                    alert('An error occurred!');
+                });
         }
 
         function setup(object) {
             var oldHtml = $(object).html();
-            $(object).attr('disabled', 'disabled');
+            $('.server-button').attr('disabled', 'disabled');
             $(object).html('Starting...');
             $.post('/projects/server/setup?project_id=' + projectId)
-                    .done(function () {
-                    })
-                    .fail(function () {
-                    })
-                    .always(function () {
-                        $(object).removeAttr('disabled');
+                .done(function (data) {
+                    listenTask(data.taskId, function () {
+                        $('.server-button').removeAttr('disabled');
                         $(object).html(oldHtml);
                         render();
                     });
+                });
         }
 
         function start(object) {
             var oldHtml = $(object).html();
-            $(object).attr('disabled', 'disabled');
+            $('.server-button').attr('disabled', 'disabled');
             $(object).html('Starting...');
             $.post('/projects/server/start?project_id=' + projectId)
-                    .done(function () {
-                    })
-                    .fail(function () {
-                    })
-                    .always(function () {
-                        $(object).removeAttr('disabled');
+                .done(function (data) {
+                    listenTask(data.taskId, function () {
+                        $('.server-button').removeAttr('disabled');
                         $(object).html(oldHtml);
                         render();
                     });
+                });
         }
 
         function stop(object) {
             var oldHtml = $(object).html();
-            $(object).attr('disabled', 'disabled');
+            $('.server-button').attr('disabled', 'disabled');
             $(object).html('Stopping...');
             $.post('/projects/server/stop?project_id=' + projectId)
-                    .always(function () {
-                        $(object).removeAttr('disabled');
+                .done(function (data) {
+                    listenTask(data.taskId, function () {
+                        $('.server-button').removeAttr('disabled');
                         $(object).html(oldHtml);
                         render();
                     });
+                });
         }
 
         function inspect(containerId) {
@@ -200,13 +199,13 @@
             $('#container-info .detail').hide();
             $('#container-info .loading').show();
             $.get('/projects/server/inspect?project_id=' + projectId + '&container_id=' + containerId)
-                    .done(function (data) {
-                        $('#container-info .loading').hide();
-                        $('#container-info .detail').show().JSONView(JSON.stringify(data, null, 2));
-                    })
-                    .fail(function () {
-                        alert('An error occurred!');
-                    });
+                .done(function (data) {
+                    $('#container-info .loading').hide();
+                    $('#container-info .detail').show().JSONView(JSON.stringify(data, null, 2));
+                })
+                .fail(function () {
+                    alert('An error occurred!');
+                });
         }
 
         function logs(serviceName) {
@@ -217,19 +216,42 @@
             $('#log-info .detail').hide();
             $('#log-info .loading').show();
             $.get('/projects/server/logs?project_id=' + projectId + '&service_name=' + serviceName)
-                    .done(function (data) {
-                        $('#log-info .loading').hide();
-                        $('#log-info .detail').show().html(data.replace(/\n/g, "<br />"));
-                    })
-                    .fail(function (e) {
-                        alert('An error occurred!');
-                    });
+                .done(function (data) {
+                    $('#log-info .loading').hide();
+                    $('#log-info .detail').show().html(data.replace(/\n/g, "<br />"));
+                })
+                .fail(function (e) {
+                    alert('An error occurred!');
+                });
         }
 
         function closeModal(e) {
             $(e).parents('.modal').modal('hide');
         }
 
-        render();
+        function listenTask(taskId, callback) {
+            $.get('/tasks/' + taskId + '/info?project_id=' + projectId)
+                .done(function (data) {
+                    if (data.isCompleted) {
+                        callback();
+                    } else {
+                        setTimeout(function () {
+                            listenTask(taskId, callback);
+                        }, 1000);
+                    }
+                });
+        }
+
+        {% if current_task.id %}
+            $('.alert-setup').show();
+            $('.server-button').attr('disabled', 'disabled');
+            listenTask({{ current_task.id }}, function () {
+                $('.alert-setup').hide();
+                $('.server-button').removeAttr('disabled');
+                render();
+            });
+        {% else %}
+            render();
+        {% endif %}
     </script>
 {% endblock %}

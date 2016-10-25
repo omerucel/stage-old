@@ -67,6 +67,8 @@ namespace {
             $collector->addRoute('GET', '/users', 'Application\Controller\UsersController');
             $collector->addRoute('GET', '/users/activities', 'Application\Controller\UserActivitiesController');
             $collector->addRoute(['GET', 'POST'], '/users/save', 'Application\Controller\UserSaveController');
+            // Tasks
+            $collector->addRoute('GET', '/tasks/{task_id:\d+}/info', 'Application\Controller\TaskInfoController');
         });
         $requestUri = $request->getRequestUri();
         $pos = strpos($requestUri, '?');

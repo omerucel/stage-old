@@ -18,8 +18,16 @@ class ServerController extends BaseController
         } catch (RecordNotFoundException $exception) {
             return $this->redirect('/projects');
         }
+        $currentTask = null;
+        try {
+            $currentTask = $this->getMapperContainer()->getProjectTaskMapper()
+                ->findCurrentSetupTaskByProject($project->id);
+        } catch (RecordNotFoundException $exception) {
+
+        }
         $templateParams = [
-            'project' => $project
+            'project' => $project,
+            'current_task' => $currentTask
         ];
         return $this->render('projects/server.twig', $templateParams);
     }
