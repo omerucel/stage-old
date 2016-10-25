@@ -47,6 +47,13 @@ $ chown -R www-data lock nginx.conf.d log tmp websites
 $ chmod -R 775 lock nginx.conf.d log tmp websites
 ```
 
+## Bağımlı kütüphanelerin kurulması
+
+Bağımlı PHP kütüphaneleri aşağıdaki komut ile kurulabilir:
+```bash
+$ composer update
+```
+
 ## Veritabanının hazırlanması
 
 Veritabanı senkronizasyonu için aşağıdaki komut çalıştırılır:
