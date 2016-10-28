@@ -70,7 +70,9 @@ class SetupExecutor extends ExecutorAbstract implements Executor
     {
         $response = $this->docker->build($this->newProjectDir);
         $this->updateOutput(implode(PHP_EOL, $response['output']));
-        $response = $this->docker->start($this->newProjectDir);
-        $this->updateOutput(implode(PHP_EOL, $response['output']));
+        if ($response['exitCode'] == 0) {
+            $response = $this->docker->start($this->newProjectDir);
+            $this->updateOutput(implode(PHP_EOL, $response['output']));
+        }
     }
 }
