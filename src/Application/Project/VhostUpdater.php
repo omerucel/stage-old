@@ -2,9 +2,8 @@
 
 namespace Application\Project;
 
-use Application\Docker;
+use Application\Command\Nginx;
 use Application\Model\Project;
-use Application\Nginx;
 
 class VhostUpdater
 {
@@ -14,99 +13,61 @@ class VhostUpdater
     protected $confPath;
 
     /**
-     * @var Docker
-     */
-    protected $docker;
-
-    /**
      * @var Nginx
      */
     protected $nginx;
 
     /**
-     * @var int
+     * @var MappedPortFinder
      */
-    protected $timeout = 15;
+    protected $mappedPortFinder;
 
     /**
-     * @param Docker $docker
-     * @param Nginx $nginx
-     * @param $confPath
+     * @param Project $project
+     * @param \Closure|null $callback
      */
-    public function __construct(Docker $docker, Nginx $nginx, $confPath)
+    public function update(Project $project, \Closure $callback = null)
     {
-        $this->docker = $docker;
-        $this->nginx = $nginx;
+        $mappedPort = $this->mappedPortFinder->getMappedPort($project->getDirectory(), $project->port);
+        if ($mappedPort > 0) {
+            $this->updateVHostFileAndReloadNginx($project, $mappedPort, $callback);
+        }
+    }
+
+    /**
+     * @param Project $project
+     * @param $mappedPort
+     * @param \Closure|null $callback
+     */
+    public function updateVHostFileAndReloadNginx(Project $project, $mappedPort, \Closure $callback = null)
+    {
+        $filePath = $this->confPath . '/project_' . $project->id . '.conf';
+        $content = str_replace('$PORT$', $mappedPort, trim($project->vhost));
+        file_put_contents($filePath, $content);
+        $this->nginx->reload($callback);
+    }
+
+    /**
+     * @param string $confPath
+     */
+    public function setConfPath($confPath)
+    {
         $this->confPath = $confPath;
     }
 
     /**
-     * @param Project $project
+     * @param Nginx $nginx
      */
-    public function update(Project $project)
+    public function setNginx($nginx)
     {
-        $port = $this->findHostPort($project->getDirectory(), $project->port);
-        if ($port > 0) {
-            $this->saveVhostFile($project, $port);
-            $this->nginx->reload();
-        }
+        $this->nginx = $nginx;
     }
 
     /**
-     * @param $directory
-     * @param $port
-     * @return int
+     * @param MappedPortFinder $mappedPortFinder
      */
-    protected function findHostPort($directory, $port)
+    public function setMappedPortFinder($mappedPortFinder)
     {
-        $startTime = time();
-        while (time() - $startTime < $this->timeout) {
-            $hostPort = $this->tryListen($directory, $port);
-            if ($hostPort != '') {
-                return $hostPort;
-            }
-            sleep(3);
-        }
-        return null;
-    }
-
-    /**
-     * @param $directory
-     * @param $port
-     * @return null
-     */
-    protected function tryListen($directory, $port)
-    {
-        $containers = $this->docker->getContainersInfo($directory);
-        foreach ($containers as $container) {
-            if (isset($container['NetworkSettings'])
-                && isset($container['NetworkSettings']['Ports'])
-                && isset($container['NetworkSettings']['Ports'][$port . '/tcp'])
-                && empty($container['NetworkSettings']['Ports'][$port . '/tcp']) == false
-                && isset($container['NetworkSettings']['Ports'][$port . '/tcp'][0]['HostPort'])) {
-                return intval($container['NetworkSettings']['Ports'][$port . '/tcp'][0]['HostPort']);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @param Project $project
-     * @param $hostPort
-     */
-    protected function saveVhostFile(Project $project, $hostPort)
-    {
-        $filePath = $this->confPath . '/project_' . $project->id . '.conf';
-        $content = trim($project->vhost);
-        $content = str_replace('$PORT$', $hostPort, $content);
-        file_put_contents($filePath, $content);
-    }
-
-    /**
-     * @param int $timeout
-     */
-    public function setTimeout($timeout)
-    {
-        $this->timeout = intval($timeout);
+        $this->mappedPortFinder = $mappedPortFinder;
     }
 }

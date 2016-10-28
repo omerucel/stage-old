@@ -2,77 +2,88 @@
 
 namespace Application\Project\Task;
 
-use Application\Docker;
+use Application\Command\DockerCompose;
+use Application\Project\VhostUpdater;
 
 class SetupExecutor extends ExecutorAbstract implements Executor
 {
-    /**
-     * @var Docker
-     */
-    protected $docker;
-
-    /**
-     * @var bool
-     */
-    protected $isNewProject = false;
-
-    /**
-     * @var string
-     */
-    protected $newProjectDir;
-
-    /**
-     * @var string
-     */
-    protected $oldProjectDir;
-
     protected function tryExecute()
     {
-        $this->prepare();
         $this->stopProject();
         $this->updateFiles();
         $this->buildAndStartProject();
-        $this->container->get('vhost_updater')->update($this->task->getProject());
-    }
-
-    public function prepare()
-    {
-        $this->isNewProject = is_dir($this->task->getProject()->getDirectory()) == false;
-        $this->docker = $this->container->get('docker');
-        $this->newProjectDir = $this->task->getProject()->getDirectory();
-        $this->oldProjectDir = $this->task->getData()->old_project_dir;
     }
 
     protected function stopProject()
     {
-        if ($this->isNewProject == false) {
-            $response = $this->docker->stop($this->oldProjectDir);
-            $this->updateOutput(implode(PHP_EOL, $response['output']));
+        if ($this->isNewProject() == false) {
+            $this->getDockerCompose()->stop($this->getOldProjectDir(), function () {
+                $this->updateOutput(func_get_arg(1));
+            });
         }
     }
 
     protected function updateFiles()
     {
-        if ($this->isNewProject == false
-            && is_dir($this->oldProjectDir)
-            && $this->oldProjectDir != $this->newProjectDir) {
-            exec('mv ' . $this->oldProjectDir . ' ' . $this->newProjectDir);
+        if ($this->isNewProject() == false
+            && is_dir($this->getOldProjectDir())
+            && $this->getOldProjectDir() != $this->getProject()->getDirectory()) {
+            exec('mv ' . $this->getOldProjectDir() . ' ' . $this->getProject()->getDirectory());
         }
-        if (is_dir($this->newProjectDir) == false) {
-            mkdir($this->newProjectDir, 0777);
+        if (is_dir($this->getProject()->getDirectory()) == false) {
+            mkdir($this->getProject()->getDirectory(), 0777);
         }
-        foreach ($this->task->getProject()->getFiles() as $name => $content) {
-            file_put_contents($this->newProjectDir . '/' . $name, $content);
+        foreach ($this->getProject()->getFiles() as $name => $content) {
+            file_put_contents($this->getProject()->getDirectory() . '/' . $name, $content);
         }
     }
 
     protected function buildAndStartProject()
     {
-        $response = $this->docker->build($this->newProjectDir);
-        $this->updateOutput(implode(PHP_EOL, $response['output']));
-        if ($response['exitCode'] == 0) {
-            $response = $this->docker->start($this->newProjectDir);
-            $this->updateOutput(implode(PHP_EOL, $response['output']));
+        $processBuild = $this->getDockerCompose()->build($this->getProject()->getDirectory(), function () {
+            $this->updateOutput(func_get_arg(1));
+        });
+        if ($processBuild->isSuccessful()) {
+            $processStart = $this->getDockerCompose()->start($this->getProject()->getDirectory(), function () {
+                $this->updateOutput(func_get_arg(1));
+            });
+            if ($processStart->isSuccessful()) {
+                $this->getVhostUpdater()->update($this->getProject(), function () {
+                        $this->updateOutput(func_get_arg(1));
+                });
+            }
         }
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isNewProject()
+    {
+        return is_dir($this->getProject()->getDirectory()) == false;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getOldProjectDir()
+    {
+        return $this->task->getData()->old_project_dir;
+    }
+
+    /**
+     * @return DockerCompose
+     */
+    protected function getDockerCompose()
+    {
+        return $this->container->get('docker_compose');
+    }
+
+    /**
+     * @return VhostUpdater
+     */
+    protected function getVhostUpdater()
+    {
+        return $this->container->get('vhost_updater');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Application\Controller;
 
-use Application\Docker;
+use Application\Command\Docker;
 
 class ServerInspectController extends BaseController
 {
@@ -21,11 +21,14 @@ class ServerInspectController extends BaseController
             return $this->getResponse();
         }
         $containerId = $this->getRequest()->get('container_id');
+        /**
+         * @var Docker $docker
+         */
         $docker = $this->getDi()->get('docker');
-        $response = $docker->inspect($containerId);
-        if ($response['exitCode'] == 0) {
+        $process = $docker->inspect($containerId);
+        if ($process->isSuccessful()) {
             $this->getResponse()->setStatusCode(200);
-            $this->getResponse()->setContent($response['output'][0]);
+            $this->getResponse()->setContent($process->getOutput());
         } else {
             $this->getResponse()->setStatusCode(500);
         }

@@ -2,7 +2,7 @@
 
 namespace Application\Controller;
 
-use Application\Docker;
+use Application\Command\DockerCompose;
 use Application\Pdo\Exception\RecordNotFoundException;
 
 class ServerLogsController extends BaseController
@@ -28,10 +28,13 @@ class ServerLogsController extends BaseController
             $this->getResponse()->setStatusCode(404);
             return $this->getResponse();
         }
-        $docker = $this->getDi()->get('docker');
-        $response = $docker->logs($project->getDirectory(), $serviceName);
+        /**
+         * @var DockerCompose $dockerCompose
+         */
+        $dockerCompose = $this->getDi()->get('docker_compose');
+        $process = $dockerCompose->logs($project->getDirectory(), $serviceName);
         $this->getResponse()->setStatusCode(200);
-        $this->getResponse()->setContent(implode(PHP_EOL, $response['output']));
+        $this->getResponse()->setContent($process->getOutput());
         return $this->getResponse();
     }
 }

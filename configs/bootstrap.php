@@ -2,11 +2,13 @@
 
 namespace {
 
+    use Application\Command\Docker;
+    use Application\Command\DockerCompose;
+    use Application\Command\Nginx;
     use Application\Database\MySQL\MapperContainer;
-    use Application\Docker;
     use Application\Logger\LoggerHelper;
-    use Application\Nginx;
     use Application\Pdo\Wrapper;
+    use Application\Project\MappedPortFinder;
     use Application\Project\VhostUpdater;
     use League\Container\Container;
 
@@ -45,19 +47,31 @@ namespace {
     });
     $di->share('docker', function () use ($di) {
         $config = $di->get('config');
-        $logger = $di->get('logger_helper')->getLogger();
-        return new Docker($config->docker_bin, $config->docker_compose_bin, $logger);
+        $docker = new Docker($config->docker_bin);
+        $docker->setLogger($di->get('logger_helper')->getLogger());
+        return $docker;
+    });
+    $di->share('docker_compose', function () use ($di) {
+        $config = $di->get('config');
+        $dockerCompose = new DockerCompose($config->docker_compose_bin);
+        $dockerCompose->setLogger($di->get('logger_helper')->getLogger());
+        $dockerCompose->setDocker($di->get('docker'));
+        return $dockerCompose;
     });
     $di->share('nginx', function () use ($di) {
         $config = $di->get('config');
-        $logger = $di->get('logger_helper')->getLogger();
-        return new Nginx($config->nginx_bin, $logger);
+        $nginx = new Nginx($config->nginx_bin);
+        $nginx->setLogger($di->get('logger_helper')->getLogger());
+        return $nginx;
     });
     $di->share('vhost_updater', function () use ($di) {
-        $docker = $di->get('docker');
-        $nginx = $di->get('nginx');
-        $confPath = realpath($di->get('config')->base_path) . '/nginx.conf.d';
-        return new VhostUpdater($docker, $nginx, $confPath);
+        $portFinder = new MappedPortFinder();
+        $portFinder->setDockerCompose($di->get('docker_compose'));
+        $updater = new VhostUpdater();
+        $updater->setConfPath(realpath($di->get('config')->base_path) . '/nginx.conf.d');
+        $updater->setMappedPortFinder($portFinder);
+        $updater->setNginx($di->get('nginx'));
+        return $updater;
     });
 
     return $di;

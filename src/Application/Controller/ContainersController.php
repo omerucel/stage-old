@@ -2,7 +2,7 @@
 
 namespace Application\Controller;
 
-use Application\Docker;
+use Application\Command\DockerCompose;
 use Application\Pdo\Exception\RecordNotFoundException;
 
 class ContainersController extends BaseController
@@ -25,8 +25,11 @@ class ContainersController extends BaseController
             $this->getResponse()->setStatusCode(404);
             return $this->getResponse();
         }
-        $docker = $this->getDi()->get('docker');
-        $containers = $docker->getContainersInfo($project->getDirectory());
+        /**
+         * @var DockerCompose $dockerCompose
+         */
+        $dockerCompose = $this->getDi()->get('docker_compose');
+        $containers = $dockerCompose->getContainersInfo($project->getDirectory());
         $this->getResponse()->setContent(json_encode($containers));
         return $this->getResponse();
     }
