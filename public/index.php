@@ -69,6 +69,22 @@ namespace {
             $collector->addRoute(['GET', 'POST'], '/users/save', 'Application\Controller\UserSaveController');
             // Tasks
             $collector->addRoute('GET', '/tasks/{task_id:\d+}/info', 'Application\Controller\TaskInfoController');
+            // Api
+            $collector->addRoute(
+                'POST',
+                '/api/webhook/setup',
+                'Application\Controller\Webhook\SetupController'
+            );
+            $collector->addRoute(
+                'POST',
+                '/api/webhook/start',
+                'Application\Controller\Webhook\StartController'
+            );
+            $collector->addRoute(
+                'POST',
+                '/api/webhook/stop',
+                'Application\Controller\Webhook\StopController'
+            );
         });
         $requestUri = $request->getRequestUri();
         $pos = strpos($requestUri, '?');

@@ -82,6 +82,7 @@ class ProjectSaveController extends BaseController
                 'vhost' => $project->vhost,
                 'port' => $project->port,
                 'files' => json_encode($files),
+                'public_key' => $project->public_key
             )
         );
         if ($this->getRequest()->isMethod('POST')) {
@@ -90,6 +91,7 @@ class ProjectSaveController extends BaseController
             $port = intval($this->getRequest()->get('port'));
             $fileNames = $this->getRequest()->get('file_name');
             $fileContents = $this->getRequest()->get('file_content');
+            $publicKey = $this->getRequest()->get('public_key');
             if (is_array($fileNames) == false) {
                 $fileNames = array();
             }
@@ -111,16 +113,9 @@ class ProjectSaveController extends BaseController
                 'name' => $name,
                 'files' => json_encode($files),
                 'vhost' => $vhost,
-                'port' => $port
+                'port' => $port,
+                'public_key' => $publicKey
             );
-
-            if ($this->getMapperContainer()->getProjectMapper()->isProjectNameUsing($name, $id) != null) {
-                $templateParams['form_messages'][] = array(
-                    'message' => 'Girilen proje adı kullanılmakta. Lütfen başka bir proje adı giriniz.',
-                    'type' => 'danger'
-                );
-                $templateParams['has_name_error'] = true;
-            }
 
             if ($name == '') {
                 $templateParams['form_messages'][] = array(
@@ -128,6 +123,26 @@ class ProjectSaveController extends BaseController
                     'type' => 'danger'
                 );
                 $templateParams['has_name_error'] = true;
+            } elseif ($this->getMapperContainer()->getProjectMapper()->isProjectNameUsing($name, $id)) {
+                $templateParams['form_messages'][] = array(
+                    'message' => 'Girilen proje adı kullanılmakta. Lütfen başka bir proje adı giriniz.',
+                    'type' => 'danger'
+                );
+                $templateParams['has_name_error'] = true;
+            }
+
+            if ($publicKey == '') {
+                $templateParams['form_messages'][] = array(
+                    'message' => 'Lütfen açık anahtar alanını boş bırakmayınız.',
+                    'type' => 'danger'
+                );
+                $templateParams['has_public_key_error'] = true;
+            } elseif ($this->getMapperContainer()->getProjectMapper()->isPublicKeyUsing($publicKey, $id)) {
+                $templateParams['form_messages'][] = array(
+                    'message' => 'Girilen açık anahtar kullanılmakta. Lütfen başka bir açık anahtar giriniz.',
+                    'type' => 'danger'
+                );
+                $templateParams['has_public_key_error'] = true;
             }
 
             if (empty($templateParams['form_messages'])) {
@@ -137,6 +152,7 @@ class ProjectSaveController extends BaseController
                 $project->folder = $slugify->slugify($name);
                 $project->vhost = $vhost;
                 $project->port = $port;
+                $project->public_key = $publicKey;
                 $this->getMapperContainer()->getProjectMapper()->save($project);
                 $this->getMapperContainer()->getProjectMapper()->updateProjectFiles($project->id, $files);
                 if ($project->id != $id) {
@@ -151,7 +167,8 @@ class ProjectSaveController extends BaseController
                         'folder' => '',
                         'vhost' => file_get_contents($this->getConfig()->base_path . '/nginx.conf.d/vhost.template'),
                         'port' => 80,
-                        'files' => json_encode([])
+                        'files' => json_encode([]),
+                        'public_key' => ''
                     );
                 }
                 $templateParams['form_messages'][] = array(

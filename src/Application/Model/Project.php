@@ -9,6 +9,7 @@ class Project extends BaseModel
     public $folder;
     public $vhost;
     public $port;
+    public $public_key;
 
     /**
      * @var array

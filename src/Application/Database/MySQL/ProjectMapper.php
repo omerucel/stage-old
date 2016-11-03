@@ -17,13 +17,16 @@ class ProjectMapper extends BaseMapper
             ':name' => $project->name,
             ':folder' => $project->folder,
             ':vhost' => $project->vhost,
-            ':port' => $project->port
+            ':port' => $project->port,
+            ':public_key' => $project->public_key
         ];
         if ($project->id == 0) {
-            $sql = 'INSERT INTO project (name, folder, vhost, port) VALUES (:name, :folder, :vhost, :port)';
+            $sql = 'INSERT INTO project (name, folder, vhost, port, public_key)'
+                . ' VALUES (:name, :folder, :vhost, :port, :public_key)';
             $project->id = $this->getWrapper()->insert($sql, $params);
         } else {
-            $sql = 'UPDATE project SET name =:name, folder =:folder, vhost =:vhost, port =:port WHERE id =:id';
+            $sql = 'UPDATE project SET name =:name, folder =:folder, vhost =:vhost, port =:port'
+                . ', public_key =:public_key WHERE id =:id';
             $params[':id'] = $project->id;
             $this->getWrapper()->query($sql, $params);
         }
@@ -86,6 +89,18 @@ class ProjectMapper extends BaseMapper
     }
 
     /**
+     * @param $publicKey
+     * @return Project
+     * @throws RecordNotFoundException
+     */
+    public function findOneObjectByPublicKey($publicKey)
+    {
+        $sql = 'SELECT * FROM project WHERE public_key =:public_key';
+        $params = [':public_key' => $publicKey];
+        return $this->getWrapper()->fetchOneObject($sql, $params, Project::class, [$this->getDi()]);
+    }
+
+    /**
      * @param $name
      * @param null $excludedId
      * @return bool
@@ -101,6 +116,21 @@ class ProjectMapper extends BaseMapper
         return $this->getWrapper()->fetchColumn($sql, $params) > 0;
     }
 
+    /**
+     * @param $publicKey
+     * @param null $excludedId
+     * @return bool
+     */
+    public function isPublicKeyUsing($publicKey, $excludedId = null)
+    {
+        $sql = 'SELECT COUNT(id) FROM project WHERE public_key =:public_key';
+        $params = [':public_key' => $publicKey];
+        if ($excludedId > 0) {
+            $sql.= ' AND id !=:id';
+            $params[':id'] = $excludedId;
+        }
+        return $this->getWrapper()->fetchColumn($sql, $params) > 0;
+    }
 
     /**
      * @param $id
