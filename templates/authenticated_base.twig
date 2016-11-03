@@ -42,31 +42,21 @@
         <aside class="main-sidebar">
             <section class="sidebar">
                 <ul class="sidebar-menu">
-                    {% if user.isAllowed('project.list') or user.isAllowed('project.save') %}
-                        <li class="treeview">
-                            <a href="#">
-                                <i class="fa fa-server"></i> <span>Projeler</span>
-                                <span class="pull-right-container">
-                                  <i class="fa fa-angle-down pull-right"></i>
-                                </span>
-                            </a>
-                            <ul class="treeview-menu">
-                                {% if user.isAllowed('project.list') %}
-                                    <li><a href="/projects">Listele</a></li>
-                                {% endif %}
-                                {% if user.isAllowed('project.save') %}
-                                    <li><a href="/projects/save">Oluştur</a></li>
-                                {% endif %}
-                            </ul>
-                        </li>
-                    {% endif %}
+                    <li class="treeview">
+                        <a href="#">
+                            <i class="fa fa-server"></i> <span>Projeler</span>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li><a href="/projects">Listele</a></li>
+                            {% if user.isAllowed('project.save') %}
+                                <li><a href="/projects/save">Oluştur</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
                     {% if user.isAllowed('users.list') or user.isAllowed('users.save') or user.isAllowed('users.activities') %}
                         <li class="treeview">
                             <a href="#">
                                 <i class="fa fa-users"></i> <span>Kullanıcılar</span>
-                                <span class="pull-right-container">
-                                  <i class="fa fa-angle-down pull-right"></i>
-                                </span>
                             </a>
                             <ul class="treeview-menu">
                                 {% if user.isAllowed('users.list') %}
