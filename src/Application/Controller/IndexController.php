@@ -7,6 +7,6 @@ class IndexController extends BaseController
     public function handle(array $params = [])
     {
         $this->checkPermission();
-        return $this->render('index.twig');
+        return $this->redirect('/projects');
     }
 }
