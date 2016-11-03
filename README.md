@@ -7,6 +7,7 @@ Projelerin docker ile nginx üzerinden sunulmasını sağlar.
 * docker-compose 1.8.0+
 * nginx
 * php-fpm
+* mysql
 
 # Kurulum
 
@@ -72,7 +73,7 @@ www-data ALL=NOPASSWD: /usr/sbin/nginx, /usr/local/bin/docker, /usr/local/bin/do
 
 Nginx ayar dosyasına proje dizinindeki nginx.conf.d dizini tanıtılmalı. 
 ```
-include /data/projects/stage/nginx.conf.d/*.conf;
+include PROJECT_DIR/nginx.conf.d/*.conf;
 ```
 
 ## Projenin çalışması için gerekli nginx ayarları
@@ -83,7 +84,7 @@ server {
         listen [::]:80;
 
         client_max_body_size 8M;
-        root /data/projects/stage/public;
+        root PROJECT_DIR/public;
         index index.html index.php;
         server_name stage.example.com;
 
@@ -139,5 +140,9 @@ projeye bağlı docker-compose.yml dosyası için çalıştırmaktadır.
 * [X] Tema iyileştirilmeli.
 * [X] nginx sanal sunucu portu otomatik olarak atanmalı.
 * [X] Arkaplanda çalışan komut durumu panelden takip edilebilmeli.
+* [ ] Arkaplanda çalışan komut bilgisi panelden takip edilebilmeli.
+* [ ] Projeye ait çalışan komut geçmişine ulaşılabilmeli.
+* [ ] Slack bildirimleri eklenmeli.
+* [ ] Hipchat bildirimleri eklenmeli.
 * [ ] Giriş formu güvenlik önlemleri
 * [ ] Tarayıcı üzerinden SSH bağlantısı yapılabilmeli.
