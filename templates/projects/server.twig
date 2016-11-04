@@ -59,40 +59,35 @@
             </div>
         </div>
         <div class="alert alert-setup" style="display: none;">Proje kuruluyor...</div>
-        <table id="containers" class="table">
-            <tbody></tbody>
-        </table>
     </div>
+    <div id="containers"></div>
     {% verbatim %}
         <script id="container-list-template" type="text/x-handlebars-template">
             {{#if containers}}
                 {{#each containers}}
-                    <tr>
-                        <td>
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <span class="fa fa-server"></span> {{name}}
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="pull-right">
-                                        <span class="label {{#if is_running }}label-success{{else}}label-danger{{/if}}">{{status}}</span>
-                                        <button type="button" class="btn btn-sm" onclick="inspect('{{id}}');"><span class="fa fa-info-circle"></span> Detay</button>
-                                        <button type="button" class="btn btn-sm" onclick="logs('{{name}}');"><span class="fa fa-history"></span> Loglar</button>
-                                    </div>
+                    <div class="box {{#if is_running }}box-success{{else}}box-danger{{/if}}">
+                        <div class="box-header with-border">
+                            <h3 class="box-title"><span class="fa fa-server" style="color:{{#if is_running }}green{{else}}red{{/if}}"></span> {{name}}</h3>
+                            <div class="box-tools pull-right">
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-sm" onclick="inspect('{{id}}');"><span class="fa fa-info-circle"></span> Detay</button>
+                                    <button type="button" class="btn btn-sm" onclick="logs('{{name}}');"><span class="fa fa-history"></span> Loglar</button>
                                 </div>
                             </div>
+                        </div>
+                        <div class="box-body">
                             <div style="padding: 4px 8px; font-size: 13px;">
                                 {{#each ports}}
                                     {{port}} -> {{hostIp}}:{{hostPort}}
+                                {{else}}
+                                    Açık port bulunamadı.
                                 {{/each}}
                             </div>
-                        </td>
-                    </tr>
+                        </div>
+                    </div>
                 {{/each}}
             {{else}}
-                <tr>
-                    <td colspan="2"><div class="alert alert-info">Herhangi bir konteyner bulunmamakta. Lütfen Başlat butonuna tıklayınız.</div></td>
-                </tr>
+                <div class="alert alert-info">Herhangi bir konteyner bulunmamakta. Kurulum yapılması gerekiyor.</div>
             {{/if}}
         </script>
     {% endverbatim %}
@@ -120,7 +115,7 @@
         var containerListTemplate = Handlebars.compile($('#container-list-template').html());
 
         function render() {
-            $('#containers tbody').html('<tr><td>Yükleniyor...</td></tr>');
+            $('#containers').html('Yükleniyor...');
             $.get('/projects/containers?project_id=' + projectId)
                 .done(function (containers) {
                     containers = _.map(containers, function (item) {
@@ -143,7 +138,7 @@
                         }
                     });
                     containers = _.sortBy(containers, 'name');
-                    $('#containers tbody').html(containerListTemplate({
+                    $('#containers').html(containerListTemplate({
                         containers: containers
                     }));
                 })
