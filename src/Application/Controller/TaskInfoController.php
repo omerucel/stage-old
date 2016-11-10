@@ -25,9 +25,13 @@ class TaskInfoController extends BaseController
             $this->getResponse()->setStatusCode(403);
             return $this->getResponse();
         }
+        $content = ['isCompleted' => $task->isCompleted()];
+        if ($this->getRequest()->get('include_output') == 1) {
+            $content['output'] = $task->output;
+        }
         $this->getResponse()
             ->setStatusCode(200)
-            ->setContent(json_encode(['isCompleted' => $task->isCompleted()]));
+            ->setContent(json_encode($content));
         return $this->getResponse();
     }
 }

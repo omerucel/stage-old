@@ -68,6 +68,7 @@ namespace {
             $collector->addRoute('GET', '/users/activities', 'Application\Controller\UserActivitiesController');
             $collector->addRoute(['GET', 'POST'], '/users/save', 'Application\Controller\UserSaveController');
             // Tasks
+            $collector->addRoute('GET', '/projects/{project_id:\d+}/tasks', 'Application\Controller\TasksController');
             $collector->addRoute('GET', '/tasks/{task_id:\d+}/info', 'Application\Controller\TaskInfoController');
             // Api
             $collector->addRoute(

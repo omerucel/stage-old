@@ -54,7 +54,8 @@
                     <button class="btn btn-warning server-button" onclick="setup(this);"><span class="fa fa-ship"></span> Yeniden Kur</button>
                     <button class="btn btn-success server-button" onclick="start(this);"><span class="fa fa-play"></span> Başlat</button>
                     <button class="btn btn-danger server-button" onclick="stop(this);"><span class="fa fa-stop"></span> Durdur</button>
-                    <button class="btn server-button" onclick="logs();"><span class="fa fa-history"></span> Loglar</button>
+                    <button class="btn btn-default server-button" onclick="logs();"><span class="fa fa-history"></span> Loglar</button>
+                    <a href="/projects/{{ project.id }}/tasks" class="btn btn-default btn-sm"><span class="fa fa-gears"></span> Tüm Görevler</a>
                 </div>
             </div>
         </div>
@@ -70,8 +71,8 @@
                             <h3 class="box-title"><span class="fa fa-server" style="color:{{#if is_running }}green{{else}}red{{/if}}"></span> {{name}}</h3>
                             <div class="box-tools pull-right">
                                 <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-sm" onclick="inspect('{{id}}');"><span class="fa fa-info-circle"></span> Detay</button>
-                                    <button type="button" class="btn btn-sm" onclick="logs('{{name}}');"><span class="fa fa-history"></span> Loglar</button>
+                                    <button type="button" class="btn btn-default btn-sm" onclick="inspect('{{id}}');"><span class="fa fa-info-circle"></span> Detay</button>
+                                    <button type="button" class="btn btn-default btn-sm" onclick="logs('{{name}}');"><span class="fa fa-history"></span> Loglar</button>
                                 </div>
                             </div>
                         </div>

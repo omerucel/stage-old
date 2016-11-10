@@ -3,6 +3,7 @@
 namespace Application\Database\MySQL;
 
 use Application\Model\ProjectTask;
+use Application\Pdo\Pager;
 
 class ProjectTaskMapper extends BaseMapper
 {
@@ -101,5 +102,27 @@ class ProjectTaskMapper extends BaseMapper
             ':updated_at' => date('Y-m-d H:i:s')
         ];
         $this->getWrapper()->query($sql, $params);
+    }
+
+    /**
+     * @param array $orderItems
+     * @param int $currentPage
+     * @param int $perPageItem
+     * @return Pager
+     */
+    public function paginate(array $orderItems = array(), $currentPage = 1, $perPageItem = 30)
+    {
+        $itemSql = 'SELECT * FROM project_task';
+        $totalCountSql = 'SELECT COUNT(*) AS count FROM project_task';
+        $pager = new Pager($this->getDi());
+        $pager->setObjectClass(ProjectTask::class);
+        $pager->setObjectContructParams(array($this->getDi()));
+        $pager->setAcceptedOrderFields(array('id', 'created_at', 'status'));
+        $pager->setOrderItems($orderItems);
+        $pager->setItemSql($itemSql);
+        $pager->setTotalItemCountSql($totalCountSql);
+        $pager->setCurrentPage($currentPage);
+        $pager->setPerPageItem($perPageItem);
+        return $pager;
     }
 }
