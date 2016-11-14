@@ -44,6 +44,7 @@
         <div class="box-body">
             {% include "messages.twig" %}
             <form method="post">
+                <input type="hidden" name="vhost" value="{{ form_data.vhost|raw }}" />
                 <div class="form-group {% if has_name_error %}has-error{% endif %}">
                     <label>Proje Adı</label>
                     <input type="text" class="form-control" name="name" value="{{ form_data.name }}" />
@@ -59,25 +60,27 @@
                 </div>
                 <div class="form-group">
                     <label>Sanal Sunucu Dosyası</label>
-                    <textarea class="form-control" rows="10" name="vhost">{{ form_data.vhost|raw }}</textarea>
+                    <div id="vhost-editor" style="height: 200px;">{{ form_data.vhost|raw }}</div>
                     <p class="help-block"><span class="fa fa-info-circle"></span> $PORT$ kalıbı, ilgili hedef port numarasına sahip bir konteyner bulunduğunda sanal sunucu dosyasını güncellemek için kullanılır.</p>
                 </div>
                 <div class="form-group">
                     <label>Hedef Port</label>
                     <input type="text" class="form-control" name="port" value="{{ form_data.port }}" />
                 </div>
-                <table class="table table-bordered table-hover" id="file-container">
-                    <thead>
-                    <tr>
-                        <th>Dosya Adı {{ test }}</th>
-                        <th style="width: 120px;">İşlemler</th>
-                    </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="form-group">
+                    <label>Dosyalar (<a href="javascript:;" onclick="showNewWindow();">Yeni Dosya Ekle</a>)</label>
+                    <table class="table table-bordered table-hover" id="file-container">
+                        <thead>
+                        <tr>
+                            <th>Dosya Adı {{ test }}</th>
+                            <th style="width: 120px;">İşlemler</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-success"><span class="fa fa-save"></span> Kaydet</button>
-                    <button type="button" class="btn btn-warning" onclick="showNewWindow();"><span class="fa fa-plus-square"></span> Yeni Dosya Ekle</button>
                     <p class="help-block"><span class="fa fa-info-circle"></span> Kaydetme işleminin ardından arkaplanda sunucu kurulum işlemi başlatılır.</p>
                 </div>
             </form>
@@ -115,7 +118,12 @@
     <script type="text/javascript">
         var files = {{  form_data.files|raw }};
         var fileEditor = ace.edit('editor');
+        var vhostEditor = ace.edit('vhost-editor');
         var fileListTemplate = Handlebars.compile($('#file-list-template').html());
+
+        vhostEditor.getSession().on("change", function () {
+            $('input[name=vhost]').val(vhostEditor.getSession().getValue());
+        });
 
         function render() {
             files = _.sortBy(files, 'name');
