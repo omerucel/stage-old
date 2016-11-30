@@ -17,6 +17,11 @@ class Project extends BaseModel
     protected $files = [];
 
     /**
+     * @var array
+     */
+    protected $notifications = [];
+
+    /**
      * @return string
      */
     public function getDirectory()
@@ -36,24 +41,14 @@ class Project extends BaseModel
     }
 
     /**
-     * @return string
-     */
-    public function getTableName()
-    {
-        return 'project';
-    }
-
-    /**
      * @return array
      */
-    public function toArray()
+    public function getNotifications()
     {
-        return array(
-            'id' => $this->id,
-            'name' => $this->name,
-            'folder' => $this->folder,
-            'vhost' => $this->vhost,
-            'port' => $this->po
-        );
+        if (empty($this->notifications) && $this->id > 0) {
+            $this->notifications = $this->getMapperContainer()->getProjectNotificationMapper()
+                ->getProjectNotifications($this->id);
+        }
+        return $this->notifications;
     }
 }

@@ -9,6 +9,7 @@ class StopExecutor extends ExecutorAbstract implements Executor
 {
     public function tryExecute()
     {
+        $this->getNotificationSenderFacade()->sendProjectStopping($this->getProject());
         $processStop = $this->getDockerCompose()->stop($this->getProject()->getDirectory(), function () {
             $this->updateOutput(func_get_arg(1));
         });
@@ -21,6 +22,9 @@ class StopExecutor extends ExecutorAbstract implements Executor
                     $this->updateOutput(func_get_arg(1));
                 });
             }
+            $this->getNotificationSenderFacade()->sendProjectStopped($this->getProject());
+        } else {
+            $this->getNotificationSenderFacade()->sendProjectStopFailed($this->getProject(), $processStop->getOutput());
         }
     }
 

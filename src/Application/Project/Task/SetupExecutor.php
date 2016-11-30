@@ -9,9 +9,11 @@ class SetupExecutor extends ExecutorAbstract implements Executor
 {
     protected function tryExecute()
     {
+        $this->getNotificationSenderFacade()->sendProjectSetupStarting($this->getProject());
         $this->stopProject();
         $this->updateFiles();
         $this->buildAndStartProject();
+        $this->getNotificationSenderFacade()->sendProjectSetupFinished($this->getProject());
     }
 
     protected function stopProject()
@@ -52,6 +54,9 @@ class SetupExecutor extends ExecutorAbstract implements Executor
                         $this->updateOutput(func_get_arg(1));
                 });
             }
+        } else {
+            $this->getNotificationSenderFacade()
+                ->sendProjectSetupFailed($this->getProject(), $processBuild->getOutput());
         }
     }
 
@@ -61,6 +66,12 @@ class SetupExecutor extends ExecutorAbstract implements Executor
     protected function isNewProject()
     {
         return is_dir($this->getProject()->getDirectory()) == false;
+    }
+
+    protected function handleException(\Exception $exception)
+    {
+        parent::handleException($exception);
+        $this->getNotificationSenderFacade()->sendProjectSetupFailed($this->getProject(), $exception->getMessage());
     }
 
     /**

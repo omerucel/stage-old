@@ -4,6 +4,7 @@ namespace Application\Controller;
 
 use Application\Model\Permission;
 use Application\Model\Project;
+use Application\Model\ProjectNotification;
 use Application\Pdo\Exception\RecordNotFoundException;
 use Application\Project\BackgroundTaskExecutor;
 use Cocur\Slugify\Slugify;
@@ -33,6 +34,7 @@ class ProjectSaveController extends BaseController
         $id = $this->getRequest()->get('id');
         $copyId = $this->getRequest()->get('copy_id');
         $files = array();
+        $notifications = array();
         if ($id > 0) {
             try {
                 $project = $this->getMapperContainer()->getProjectMapper()->findOneObjectById($id);
@@ -65,6 +67,16 @@ class ProjectSaveController extends BaseController
                 'content' => $fileContent
             ];
         }
+        /**
+         * @var ProjectNotification $notification
+         */
+        foreach ($project->getNotifications() as $notification) {
+            $notifications[] = [
+                'name' => $notification->name,
+                'type' => $notification->type,
+                'data' => json_decode($notification->data)
+            ];
+        }
         if ($copyId > 0) {
             $project->id = 0;
             $project->name = $project->name . ' Copy';
@@ -82,6 +94,7 @@ class ProjectSaveController extends BaseController
                 'vhost' => $project->vhost,
                 'port' => $project->port,
                 'files' => json_encode($files),
+                'notifications' => json_encode($notifications),
                 'public_key' => $project->public_key
             )
         );
@@ -91,6 +104,8 @@ class ProjectSaveController extends BaseController
             $port = intval($this->getRequest()->get('port'));
             $fileNames = $this->getRequest()->get('file_name');
             $fileContents = $this->getRequest()->get('file_content');
+            $notificationNames = $this->getRequest()->get('notification_name');
+            $notificationData = $this->getRequest()->get('notification_data');
             $publicKey = $this->getRequest()->get('public_key');
             if (is_array($fileNames) == false) {
                 $fileNames = array();
@@ -109,9 +124,28 @@ class ProjectSaveController extends BaseController
                     'content' => $fileContents[$index]
                 ];
             }
+            if (is_array($notificationNames) == false) {
+                $notificationNames = array();
+            }
+            if (is_array($notificationData) == false) {
+                $notificationData = array();
+            }
+            if (count($notificationNames) != count($notificationData)) {
+                $notificationNames = array();
+                $notificationData = array();
+            }
+            $notifications = array();
+            foreach ($notificationNames as $index => $notificationName) {
+                $notifications[] = [
+                    'name' => $notificationName,
+                    'type' => 'slack',
+                    'data' => json_decode($notificationData[$index])
+                ];
+            }
             $templateParams['form_data'] = array(
                 'name' => $name,
                 'files' => json_encode($files),
+                'notifications' => json_encode($notifications),
                 'vhost' => $vhost,
                 'port' => $port,
                 'public_key' => $publicKey
@@ -155,6 +189,8 @@ class ProjectSaveController extends BaseController
                 $project->public_key = $publicKey;
                 $this->getMapperContainer()->getProjectMapper()->save($project);
                 $this->getMapperContainer()->getProjectMapper()->updateProjectFiles($project->id, $files);
+                $this->getMapperContainer()->getProjectMapper()
+                    ->updateProjectNotifications($project->id, $notifications);
                 if ($project->id != $id) {
                     $this->getMapperContainer()->getUserMapper()->setUserProject($this->getUser()->id, $project->id);
                 }
@@ -168,6 +204,7 @@ class ProjectSaveController extends BaseController
                         'vhost' => file_get_contents($this->getConfig()->base_path . '/nginx.conf.d/vhost.template'),
                         'port' => 80,
                         'files' => json_encode([]),
+                        'notifications' => json_encode([]),
                         'public_key' => ''
                     );
                 }

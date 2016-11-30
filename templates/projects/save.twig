@@ -5,11 +5,44 @@
 {% endblock %}
 
 {% block content %}
+    <div id="notification-save" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" onclick="projectNotifications.closeModal();">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Bildirim</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="old_name" value="" />
+                    <div class="form-group">
+                        <label>Bildirim Adı</label>
+                        <input type="text" class="form-control" name="name" />
+                    </div>
+                    <div class="form-group">
+                        <label>Bağlantı</label>
+                        <input type="text" class="form-control" name="url" />
+                    </div>
+                    <div class="form-group">
+                        <label>Kabul Edilen Durumlar</label>
+                        <div>
+                            <select name="accepted_actions" multiple="multiple" class="form-control" style="width: 100%"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="projectNotifications.save();">Kaydet</button>
+                    <button type="button" class="btn btn-secondary" onclick="projectNotifications.closeModal();">İptal</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="file-save" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" onclick="closeModal();">
+                    <button type="button" class="close" onclick="projectFiles.closeModal();">
                         <span aria-hidden="true">&times;</span>
                     </button>
                     <h4 class="modal-title">Dosya</h4>
@@ -26,8 +59,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="setFile();">Kaydet</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal();">İptal</button>
+                    <button type="button" class="btn btn-primary" onclick="projectFiles.save();">Kaydet</button>
+                    <button type="button" class="btn btn-secondary" onclick="projectFiles.closeModal();">İptal</button>
                 </div>
             </div>
         </div>
@@ -54,7 +87,7 @@
                     <div class="input-group">
                         <input type="text" class="form-control" name="public_key" value="{{ form_data.public_key }}" />
                         <span class="input-group-btn">
-                            <button class="btn btn-secondary" type="button" onclick="$('input[name=public_key]').val(refresh());">Yenile</button>
+                            <button class="btn btn-secondary" type="button" onclick="$('input[name=public_key]').val(newPublicKey());">Yenile</button>
                         </span>
                     </div>
                 </div>
@@ -68,11 +101,23 @@
                     <input type="text" class="form-control" name="port" value="{{ form_data.port }}" />
                 </div>
                 <div class="form-group">
-                    <label>Dosyalar (<a href="javascript:;" onclick="showNewWindow();">Yeni Dosya Ekle</a>)</label>
+                    <label>Bildirimler (<a href="javascript:;" onclick="projectNotifications.openNewNotificationWindow();">Yeni Bildirim Ekle</a>)</label>
+                    <table class="table table-bordered table-hover" id="notification-container">
+                        <thead>
+                            <tr>
+                                <th>Bildirim Adı</th>
+                                <th style="width: 120px;">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="form-group">
+                    <label>Dosyalar (<a href="javascript:;" onclick="projectFiles.openNewFileWindow();">Yeni Dosya Ekle</a>)</label>
                     <table class="table table-bordered table-hover" id="file-container">
                         <thead>
                         <tr>
-                            <th>Dosya Adı {{ test }}</th>
+                            <th>Dosya Adı</th>
                             <th style="width: 120px;">İşlemler</th>
                         </tr>
                         </thead>
@@ -97,113 +142,72 @@
                             <input type="hidden" name="file_content[]" value="{{ content }}" />
                         </td>
                         <td>
-                            <button type="button" class="btn btn-sm" onclick="showEditWindow('{{ name }}');"><span class="fa fa-edit"></span></button>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="removeFile('{{ name }}');"><span class="fa fa-remove"></span></button>
+                            <button type="button" class="btn btn-sm" onclick="projectFiles.openEditFileWindow('{{ name }}');"><span class="fa fa-edit"></span></button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="projectFiles.removeFile('{{ name }}');"><span class="fa fa-remove"></span></button>
                         </td>
                     </tr>
                 {{/each}}
             {{else}}
                 <tr>
-                    <td colspan="2"><div class="alert alert-info">Herhangi bir dosya eklenmemiş.</div></td>
+                    <td colspan="2">Herhangi bir dosya eklenmemiş.</td>
+                </tr>
+            {{/if}}
+        </script>
+
+        <script id="notification-list-template" type="text/x-handlebars-template">
+            {{#if notifications}}
+                {{#each notifications}}
+                    <tr>
+                        <td>
+                            <span {{#if notSaved}}style="color: indianred;"{{/if}}>{{ name }}</span>
+                            <input type="hidden" name="notification_name[]" value="{{ name }}" />
+                            <input type="hidden" name="notification_data[]" value="{{ jsonEncode data }}" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm" onclick="projectNotifications.openEditNotificationWindow('{{ name }}');"><span class="fa fa-edit"></span></button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="projectNotifications.removeNotification('{{ name }}');"><span class="fa fa-remove"></span></button>
+                        </td>
+                    </tr>
+                {{/each}}
+            {{else}}
+                <tr>
+                    <td colspan="2">Herhangi bir bildirim eklenmemiş.</td>
                 </tr>
             {{/if}}
         </script>
     {% endverbatim %}
 {% endblock %}
 
+{% block css %}
+    {{ parent() }}
+    <link rel="stylesheet" type="text/css" href="/assets/select2/css/select2.min.css" />
+{% endblock %}
+
 {% block js %}
+    <script type="text/javascript" src="/assets/select2/js/select2.full.min.js"></script>
     <script type="text/javascript" src="/assets/underscore.js"></script>
     <script type="text/javascript" src="/assets/ace/ace.js"></script>
     <script type="text/javascript" src="/assets/handlebars.js"></script>
+    <script type="text/javascript" src="/assets/app/helpers.js"></script>
+    <script type="text/javascript" src="/assets/app/project_files.js"></script>
+    <script type="text/javascript" src="/assets/app/project_notifications.js"></script>
     <script type="text/javascript">
-        var files = {{  form_data.files|raw }};
-        var fileEditor = ace.edit('editor');
+        var projectFiles = new ProjectFiles({
+            fileEditor: 'editor',
+            modal: '#file-save',
+            container: '#file-container',
+            template: '#file-list-template',
+            files: {{ form_data.files|raw }}
+        });
+        var projectNotifications = new ProjectNotifications({
+            modal: '#notification-save',
+            container: '#notification-container',
+            template: '#notification-list-template',
+            notifications: {{ form_data.notifications|raw }}
+        });
         var vhostEditor = ace.edit('vhost-editor');
-        var fileListTemplate = Handlebars.compile($('#file-list-template').html());
-
         vhostEditor.getSession().on("change", function () {
             $('input[name=vhost]').val(vhostEditor.getSession().getValue());
         });
-
-        function render() {
-            files = _.sortBy(files, 'name');
-            $('#file-container tbody').html(fileListTemplate({
-                files: files
-            }));
-        }
-
-        function removeFile(name) {
-            files = _.reject(files, function (item) {
-                return item.name == name;
-            });
-            render();
-        }
-
-        function showNewWindow() {
-            $('#file-save input[name=old_name]').val('');
-            $('#file-save input[name=name]').val('');
-            $('#file-save').modal('show');
-            setTimeout(function () {
-                fileEditor.getSession().setValue('');
-            }, 300);
-        }
-
-        function showEditWindow(name) {
-            $('#file-save input[name=old_name]').val(name);
-            var file = _.findWhere(files, {name: name});
-            $('#file-save input[name=name]').val(file.name);
-            $('#file-save').modal('show');
-            setTimeout(function () {
-                fileEditor.getSession().setValue(file.content);
-            }, 300);
-        }
-
-        function setFile() {
-            var oldName = $('#file-save input[name=old_name]').val();
-            var name = $('#file-save input[name=name]').val();
-            var content = fileEditor.getSession().getValue();
-            if (oldName.length == 0 || (oldName != name)) {
-                oldFile = _.findWhere(files, {name: name});
-                if (oldFile != undefined) {
-                    if (confirm('Aynı isimli başka bir dosya var. Üzerine yazılsın mı?')) {
-                        saveFile(name, content, oldName);
-                    }
-                } else {
-                    saveFile(name, content, oldName);
-                }
-            } else {
-                saveFile(name, content, oldName);
-            }
-        }
-
-        function saveFile(name, content, oldName) {
-            files = _.reject(files, function (file) {
-                return file.name == name || file.name == oldName;
-            });
-            files.push({
-                name: name,
-                content: content,
-                notSaved: true
-            });
-            $('#file-save input[name=name]').val('');
-            fileEditor.getSession().setValue('');
-            $('#file-save').modal('hide');
-            render();
-        }
-
-        function closeModal() {
-            $('#file-save').modal('hide');
-        }
-
-        function refresh() {
-            function s4() {
-                return Math.floor((1 + Math.random()) * 0x10000)
-                        .toString(16)
-                        .substring(1);
-            }
-            return s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
-        }
-
-        render();
     </script>
 {% endblock %}

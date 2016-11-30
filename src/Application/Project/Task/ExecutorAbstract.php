@@ -5,6 +5,8 @@ namespace Application\Project\Task;
 use Application\Database\MySQL\ProjectTaskMapper;
 use Application\Model\Project;
 use Application\Model\ProjectTask;
+use Application\Notification\Facade;
+use Application\Notification\Sender;
 use League\Container\Container;
 use Psr\Log\LoggerInterface;
 
@@ -26,6 +28,11 @@ abstract class ExecutorAbstract implements Executor
     protected $lockResource;
 
     /**
+     * @var Facade
+     */
+    protected $notificationSenderFacade;
+
+    /**
      * @param Container $container
      * @param ProjectTask $task
      */
@@ -42,17 +49,30 @@ abstract class ExecutorAbstract implements Executor
         $this->lockProject();
         $this->getProjectTaskMapper()->setRunning($this->task->id);
         try {
-            $isLocked = $this->lockProject();
-            if ($isLocked) {
-                $this->tryExecute();
-            } else {
-                $this->updateOutput('Project could not locked!');
-            }
+            $this->tryLockAndExecute();
         } catch (\Exception $exception) {
-            $this->updateOutput('An error occurred:' . $exception->getMessage());
-            $this->getLogger()->error($exception);
+            $this->handleException($exception);
         }
         $this->getProjectTaskMapper()->setCompleted($this->task->id);
+    }
+
+    private function tryLockAndExecute()
+    {
+        $isLocked = $this->lockProject();
+        if ($isLocked) {
+            $this->tryExecute();
+        } else {
+            $this->updateOutput('Project could not locked!');
+        }
+    }
+
+    /**
+     * @param \Exception $exception
+     */
+    protected function handleException(\Exception $exception)
+    {
+        $this->updateOutput('An error occurred:' . $exception->getMessage());
+        $this->getLogger()->error($exception);
     }
 
     /**
@@ -73,6 +93,18 @@ abstract class ExecutorAbstract implements Executor
         $buffer = trim($buffer) . PHP_EOL;
         $this->task->output.= $buffer;
         $this->getProjectTaskMapper()->updateOutput($this->task->id, $buffer);
+    }
+
+    /**
+     * @return Facade
+     */
+    protected function getNotificationSenderFacade()
+    {
+        if ($this->notificationSenderFacade == null) {
+            $sender = new Sender($this->getProject(), $this->getLogger());
+            $this->notificationSenderFacade = new Facade($sender);
+        }
+        return $this->notificationSenderFacade;
     }
 
     /**

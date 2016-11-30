@@ -54,6 +54,28 @@ class ProjectMapper extends BaseMapper
     }
 
     /**
+     * @param $projectId
+     * @param array $notifications
+     */
+    public function updateProjectNotifications($projectId, array $notifications = array())
+    {
+        $sql = 'DELETE FROM project_notification WHERE project_id =:project_id';
+        $this->getWrapper()->query($sql, [':project_id' => $projectId]);
+        if (empty($notifications) == false) {
+            $sql = 'INSERT INTO project_notification (project_id, name, type, data) VALUES '
+                . substr(str_repeat('(?, ?, ?, ?),', count($notifications)), 0, -1);
+            $params = array();
+            foreach ($notifications as $notification) {
+                $params[] = $projectId;
+                $params[] = $notification['name'];
+                $params[] = $notification['type'];
+                $params[] = json_encode($notification['data']);
+            }
+            $this->getWrapper()->query($sql, $params);
+        }
+    }
+
+    /**
      * @param $userId
      * @return array
      */

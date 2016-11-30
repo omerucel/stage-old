@@ -60,6 +60,14 @@ class MapperContainer
     }
 
     /**
+     * @return ProjectNotificationMapper
+     */
+    public function getProjectNotificationMapper()
+    {
+        return $this->getMapper('ProjectNotificationMapper');
+    }
+
+    /**
      * @param $name
      * @return BaseMapper
      */
